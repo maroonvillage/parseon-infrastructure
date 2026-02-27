@@ -42,3 +42,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
     }
   }
 }
+
+/* Next Improvement Layer (Optional but Recommended Soon)
+
+For S3:
+• Add bucket policy for CloudFront or ALB logs
+• Enable access logging
+• Consider KMS instead of AES256 */

@@ -25,3 +25,4 @@ variable "health_check_path" {
   type    = string
   default = "/health"
 }
+variable "target_group_arn" { type = string }

@@ -19,3 +19,8 @@ resource "aws_sqs_queue" "this" {
     maxReceiveCount     = var.max_receive_count
   }) : null
 }
+/*
+Next Improvement Layer (Optional but Recommended Soon)
+For SQS:
+• Add queue policy to restrict who can send messages
+• Add CloudWatch alarms on DLQ depth */

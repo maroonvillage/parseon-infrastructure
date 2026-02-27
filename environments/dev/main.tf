@@ -84,3 +84,22 @@ module "s3" {
   source      = "../../modules/s3"
   name_prefix = "app-dev"
 }
+
+module "alb" {
+  source = "../../modules/alb"
+
+  name_prefix       = "app-dev"
+  vpc_id            = module.vpc.vpc_id
+  public_subnet_ids = module.vpc.public_subnets
+  security_group_id = module.security_group.alb_sg_id
+  target_port       = 8080
+  certificate_arn   = var.alb_certificate_arn
+}
+
+module "cloudfront" {
+  source = "../../modules/cloudfront"
+
+  name_prefix         = "app-dev"
+  alb_dns_name        = module.alb.alb_dns_name
+  acm_certificate_arn = var.cloudfront_certificate_arn
+}

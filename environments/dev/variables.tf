@@ -9,3 +9,16 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+
+variable "alb_certificate_arn" {
+  description = "ARN of the ACM certificate for the ALB"
+  type        = string
+  default     = "dev"
+}
+
+
+variable "cloudfront_certificate_arn" {
+  description = "ARN of the ACM certificate for CloudFront"
+  type        = string
+  default     = "dev"
+}
