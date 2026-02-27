@@ -35,7 +35,8 @@ module "s3" {
 }
 
 module "sqs" {
-  source = "../modules/sqs"
+  source      = "../modules/sqs"
+  name_prefix = "app-dev"
 }
 
 module "alb" {
@@ -57,7 +58,7 @@ module "ecs_cluster" {
 module "ecs_service" {
   source = "./modules/ecs_service"
 
-  name_prefix = "app"
+  name_prefix = "app-dev"
 
   cluster_id   = module.ecs_cluster.cluster_id
   cluster_name = module.ecs_cluster.cluster_name
@@ -77,4 +78,9 @@ module "ecs_service" {
   desired_count = 1
 
   security_group_id = module.security_group.ecs_service_sg_id
+}
+
+module "s3" {
+  source      = "../../modules/s3"
+  name_prefix = "app-dev"
 }
