@@ -33,34 +33,6 @@ resource "aws_ecs_task_definition" "this" {
     }
   ])
 }
-resource "aws_lb" "this" {
-  name               = "${var.name_prefix}-alb"
-  internal           = false
-  load_balancer_type = "application"
-  subnets            = var.public_subnet_ids
-  security_groups    = [var.security_group_id]
-}
-resource "aws_lb_target_group" "this" {
-  name        = "${var.name_prefix}-tg"
-  port        = var.container_port
-  protocol    = "HTTP"
-  target_type = "ip"
-  vpc_id      = var.vpc_id
-
-  health_check {
-    path = var.health_check_path
-  }
-}
-resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.this.arn
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.this.arn
-  }
-}
 resource "aws_ecs_service" "this" {
   name            = "${var.name_prefix}-service"
   cluster         = var.cluster_id
@@ -79,8 +51,6 @@ resource "aws_ecs_service" "this" {
     container_name   = "${var.name_prefix}-container"
     container_port   = var.container_port
   }
-
-  depends_on = [aws_lb_listener.http]
 }
 resource "aws_appautoscaling_target" "ecs" {
   max_capacity       = 4

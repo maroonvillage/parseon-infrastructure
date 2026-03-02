@@ -6,7 +6,11 @@ variable "cluster_name" { type = string }
 
 variable "vpc_id" { type = string }
 variable "private_subnet_ids" { type = list(string) }
-variable "public_subnet_ids" { type = list(string) }
+# public_subnet_ids kept for potential future use (e.g. public tasks)
+variable "public_subnet_ids" {
+  type    = list(string)
+  default = []
+}
 
 variable "ecs_task_role_arn" { type = string }
 variable "ecs_execution_role_arn" { type = string }
