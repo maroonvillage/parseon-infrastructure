@@ -33,8 +33,9 @@ variable "private_subnet_cidrs" {
 }
 
 # ── Compute ────────────────────────────────────────────────────────────────────
-variable "container_image" {
-  type = string
+variable "ecr_image_tag" {
+  description = "Image tag to deploy (e.g. v1.2.3, git-sha). Avoid 'latest' in prod."
+  type        = string
 }
 
 variable "container_port" {

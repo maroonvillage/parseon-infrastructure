@@ -8,7 +8,7 @@ public_subnet_cidrs  = ["10.1.1.0/24", "10.1.2.0/24"]
 private_subnet_cidrs = ["10.1.11.0/24", "10.1.12.0/24"]
 
 # ── Compute ────────────────────────────────────────────────────────────────────
-container_image   = "REPLACE_WITH_ECR_URI/parseon-api:latest"
+ecr_image_tag     = "REPLACE_WITH_IMAGE_TAG"
 container_port    = 8000
 ecs_cpu           = 1024
 ecs_memory        = 2048

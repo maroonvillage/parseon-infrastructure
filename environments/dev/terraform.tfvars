@@ -9,7 +9,7 @@ private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
 
 # ── Compute ────────────────────────────────────────────────────────────────────
 # Replace with your real ECR image URI once the ECR repo exists.
-container_image   = "REPLACE_WITH_ECR_URI/parseon-api:latest"
+ecr_image_tag     = "latest"
 container_port    = 8000
 ecs_cpu           = 512
 ecs_memory        = 1024

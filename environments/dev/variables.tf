@@ -36,9 +36,10 @@ variable "private_subnet_cidrs" {
 }
 
 # ── Compute ────────────────────────────────────────────────────────────────────
-variable "container_image" {
-  description = "Full ECR image URI (e.g. 123456789.dkr.ecr.us-east-1.amazonaws.com/app:latest)"
+variable "ecr_image_tag" {
+  description = "Image tag to deploy (e.g. latest, v1.2.3, git-sha)"
   type        = string
+  default     = "latest"
 }
 
 variable "container_port" {

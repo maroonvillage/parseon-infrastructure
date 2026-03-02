@@ -1,5 +1,10 @@
 # Dev environment outputs
 
+output "ecr_repository_url" {
+  description = "ECR repository URL — use as the base for container_image"
+  value       = module.ecr.repository_url
+}
+
 output "vpc_id" {
   description = "VPC ID"
   value       = module.vpc.vpc_id

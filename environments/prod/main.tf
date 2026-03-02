@@ -75,6 +75,18 @@ module "rds" {
 }
 
 # ---------------------------------------------------------------------------
+# ECR
+# ---------------------------------------------------------------------------
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name        = "${var.project_name}-api"
+  image_tag_mutability   = "IMMUTABLE"
+  max_image_count        = 20
+  ecs_execution_role_arn = module.iam.ecs_execution_role_arn
+}
+
+# ---------------------------------------------------------------------------
 # Compute
 # ---------------------------------------------------------------------------
 module "ecs_cluster" {
@@ -111,7 +123,7 @@ module "ecs_service" {
   ecs_task_role_arn      = module.iam.ecs_task_role_arn
   ecs_execution_role_arn = module.iam.ecs_execution_role_arn
 
-  container_image = var.container_image
+  container_image = "${module.ecr.repository_url}:${var.ecr_image_tag}"
   container_port  = var.container_port
 
   cpu           = var.ecs_cpu
