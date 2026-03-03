@@ -23,5 +23,6 @@ secrets_arns        = []
 enable_rds_iam_auth = false
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
-alb_certificate_arn        = "REPLACE_WITH_ACM_ALB_CERT_ARN"
-cloudfront_certificate_arn = "REPLACE_WITH_ACM_CLOUDFRONT_CERT_ARN"
+# Real ACM ARNs required in prod before applying
+alb_certificate_arn        = null
+cloudfront_certificate_arn = null

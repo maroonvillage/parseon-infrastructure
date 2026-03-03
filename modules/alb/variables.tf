@@ -9,7 +9,9 @@ variable "security_group_id" { type = string }
 variable "target_port" { type = number }
 
 variable "certificate_arn" {
-  type = string
+  description = "ARN of the ACM certificate for the HTTPS listener. If null, only HTTP is configured."
+  type        = string
+  default     = null
 }
 
 variable "health_check_path" {

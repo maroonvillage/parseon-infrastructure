@@ -94,11 +94,13 @@ variable "enable_rds_iam_auth" {
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 variable "alb_certificate_arn" {
-  description = "ARN of the ACM certificate (in us-east-1 OR the ALB region) used by the ALB HTTPS listener"
+  description = "ARN of the ACM certificate for the ALB HTTPS listener. Leave null until a certificate exists."
   type        = string
+  default     = null
 }
 
 variable "cloudfront_certificate_arn" {
-  description = "ARN of the ACM certificate in us-east-1 used by CloudFront"
+  description = "ARN of the ACM certificate in us-east-1 for CloudFront. Leave null to use the default CloudFront certificate."
   type        = string
+  default     = null
 }

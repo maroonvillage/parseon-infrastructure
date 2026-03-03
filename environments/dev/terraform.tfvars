@@ -26,5 +26,6 @@ enable_rds_iam_auth = false
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 # Both ARNs must be created in ACM before applying. CloudFront cert MUST be in us-east-1.
-alb_certificate_arn        = "REPLACE_WITH_ACM_ALB_CERT_ARN"
-cloudfront_certificate_arn = "REPLACE_WITH_ACM_CLOUDFRONT_CERT_ARN"
+# Leave null until ACM certificates are provisioned for your domain
+alb_certificate_arn        = null
+cloudfront_certificate_arn = null
