@@ -50,7 +50,7 @@ resource "aws_ecr_lifecycle_policy" "this" {
 
 # Repository policy: allow the ECS task execution role to pull images
 data "aws_iam_policy_document" "ecr_pull" {
-  count = var.ecs_execution_role_arn != "" ? 1 : 0
+  # count = var.ecs_execution_role_arn != "" ? 1 : 0
 
   statement {
     sid    = "AllowECSPull"
