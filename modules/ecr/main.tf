@@ -70,7 +70,7 @@ data "aws_iam_policy_document" "ecr_pull" {
 }
 
 resource "aws_ecr_repository_policy" "this" {
-  count = var.ecs_execution_role_arn != "" ? 1 : 0
+  # count = var.ecs_execution_role_arn != "" ? 1 : 0
 
   repository = aws_ecr_repository.this.name
   policy     = data.aws_iam_policy_document.ecr_pull[0].json
