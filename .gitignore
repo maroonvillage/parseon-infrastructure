@@ -1,4 +1,31 @@
+# Terraform local files and directories
+.terraform/
+
+# Terraform state files (contain sensitive data)
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Terraform variable files (may contain sensitive values)
+*.tfvars
+!*.tfvars.example
+
+# Terraform override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Terraform crash logs
+crash.log
+crash.*.log
+
+# Terraform plan output files
+*.tfplan
+
+# Terraform generated files
+.terraform.tfstate.lock.info
+
+# macOS
+.DS_Store
 .terraform.lock.hcl
-.terraform/providers/registry.terraform.io/hashicorp/aws/5.100.0/darwin_amd64/*
-environments/dev/.terraform/providers/registry.terraform.io/hashicorp/aws/6.34.0/darwin_amd64/*
-bootstrap/.terraform/providers/registry.terraform.io/hashicorp/aws/5.100.0/darwin_amd64/*
