@@ -1,14 +1,15 @@
 # Terraform local files and directories
 .terraform/
 
-# Terraform state files (contain sensitive data)
+# Terraform state files (contain sensitive data — remote state is in HCP Terraform)
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
 
 # Terraform variable files (may contain sensitive values)
+# Environment tfvars are intentionally tracked (no secrets — secrets go in HCP Terraform workspace variables)
 *.tfvars
-!*.tfvars.example
+!environments/*/terraform.tfvars
 
 # Terraform override files
 override.tf
@@ -22,10 +23,13 @@ crash.*.log
 
 # Terraform plan output files
 *.tfplan
+plan_output.txt
 
 # Terraform generated files
 .terraform.tfstate.lock.info
 
+# Terraform provider lock files should be committed for reproducible installs
+# (removed .terraform.lock.hcl from exclusions)
+
 # macOS
 .DS_Store
-.terraform.lock.hcl
