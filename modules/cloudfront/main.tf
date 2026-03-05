@@ -7,9 +7,10 @@ resource "aws_cloudfront_distribution" "this" {
     origin_id   = "alb-origin"
 
     custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
+      http_port  = 80
+      https_port = 443
+      # Temporarily http-only until alb_certificate_arn is set in tfvars and ALB HTTPS listener is active
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
