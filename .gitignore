@@ -33,3 +33,4 @@ plan_output.txt
 
 # macOS
 .DS_Store
+.terraform.lock.hcl
