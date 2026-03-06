@@ -22,6 +22,8 @@ resource "aws_iam_role" "ecs_task_role" {
   assume_role_policy = data.aws_iam_policy_document.ecs_task_trust.json
 }
 data "aws_iam_policy_document" "s3_access" {
+  count = length(var.s3_bucket_arns) > 0 ? 1 : 0
+
   statement {
     actions = [
       "s3:GetObject",
@@ -37,6 +39,8 @@ data "aws_iam_policy_document" "s3_access" {
   }
 }
 data "aws_iam_policy_document" "sqs_access" {
+  count = length(var.sqs_queue_arns) > 0 ? 1 : 0
+
   statement {
     actions = [
       "sqs:SendMessage",
@@ -49,6 +53,8 @@ data "aws_iam_policy_document" "sqs_access" {
   }
 }
 data "aws_iam_policy_document" "secrets_access" {
+  count = length(var.secrets_arns) > 0 ? 1 : 0
+
   statement {
     actions = [
       "secretsmanager:GetSecretValue",
@@ -69,9 +75,9 @@ data "aws_iam_policy_document" "rds_iam_auth" {
 
 data "aws_iam_policy_document" "combined_task_policy" {
   source_policy_documents = compact([
-    data.aws_iam_policy_document.s3_access.json,
-    data.aws_iam_policy_document.sqs_access.json,
-    data.aws_iam_policy_document.secrets_access.json,
+    length(var.s3_bucket_arns) > 0 ? data.aws_iam_policy_document.s3_access[0].json : null,
+    length(var.sqs_queue_arns) > 0 ? data.aws_iam_policy_document.sqs_access[0].json : null,
+    length(var.secrets_arns) > 0 ? data.aws_iam_policy_document.secrets_access[0].json : null,
     var.enable_rds_iam_auth ? data.aws_iam_policy_document.rds_iam_auth[0].json : null
   ])
 }
