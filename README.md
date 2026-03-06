@@ -73,7 +73,8 @@ After `apply` succeeds:
 In [app.terraform.io](https://app.terraform.io), for **both** `parseon-agentic-dev` and `parseon-agentic-prod` workspaces:
 
 1. Set **Execution Mode** → **Remote**.
-2. Add the following **Environment Variables** (mark as sensitive):
+2. **Do not** connect the workspace to a VCS repository. The CI/CD pipeline uses the [API-driven workflow](https://developer.hashicorp.com/terraform/cloud-docs/run/api) (`hashicorp/tfc-workflows-github` actions) to upload configurations and trigger runs. Attaching a VCS connection blocks CLI/API-triggered applies.
+3. Add the following **Environment Variables** (mark as sensitive):
 
    | Variable | Value |
    |----------|-------|
@@ -101,10 +102,10 @@ In **this** GitHub repository → Settings → Secrets and variables → Actions
 | Trigger | Job | Action |
 |---------|-----|--------|
 | Pull request → `main` | `plan` | Runs `terraform plan` in `environments/dev`, posts output as a PR comment |
-| Push to `main` | `apply-dev` | Runs `terraform apply -auto-approve` in `environments/dev` |
-| `workflow_dispatch` with `environment=prod` | `apply-prod` | Runs `terraform apply -auto-approve` with the supplied `ecr_image_tag` in `environments/prod` |
+| Push to `main` | `apply-dev` | Uploads `environments/dev` to HCP Terraform and triggers a run via API; posts run link to the merged PR |
+| `workflow_dispatch` with `environment=prod` | `apply-prod` | Uploads `environments/prod` (with the supplied `ecr_image_tag`) to HCP Terraform and triggers a run via API |
 
-All operations execute **remotely inside HCP Terraform** — `-auto-approve` passes the confirmation through the CLI driver so the run applies without a manual click in the HCP UI.
+Apply jobs use the `hashicorp/tfc-workflows-github` actions (`upload-configuration` → `create-run` → `apply-run`) so that runs are API-driven and not blocked by the workspace's VCS-connection setting.
 
 ---
 

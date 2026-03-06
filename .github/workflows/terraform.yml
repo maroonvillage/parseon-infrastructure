@@ -93,6 +93,9 @@ jobs:
       contents: read
       pull-requests: write
     environment: dev
+    env:
+      TFC_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      TFC_ORGANIZATION: maroonvillage-hcp-organization
     defaults:
       run:
         working-directory: environments/dev
@@ -107,26 +110,37 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Apply
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
+        id: upload
+        with:
+          workspace: parseon-agentic-dev
+          directory: environments/dev
+
+      - name: Create Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
+        id: run
+        with:
+          workspace: parseon-agentic-dev
+          configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+
+      - name: Apply Run
+        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.3.2
         id: apply
-        run: terraform apply -auto-approve -no-color 2>&1 | tee apply_output.txt
         continue-on-error: true
+        with:
+          run: ${{ steps.run.outputs.run_id }}
+          comment: "Triggered by GitHub Actions (push to main, commit ${{ github.sha }})"
 
       - name: Post apply result to merged PR
         uses: actions/github-script@v7
         with:
           script: |
-            const fs = require('fs');
-            const apply = fs.readFileSync('environments/dev/apply_output.txt', 'utf8');
             const outcome = '${{ steps.apply.outcome }}';
+            const runLink = '${{ steps.run.outputs.run_link }}';
             const body = [
               `#### Terraform Apply — dev \`${outcome}\``,
-              '<details><summary>Show Apply Output</summary>',
-              '',
-              '```',
-              apply.slice(0, 60000),
-              '```',
-              '</details>',
+              `[View run in HCP Terraform](${runLink})`,
             ].join('\n');
             const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
               owner: context.repo.owner,
@@ -157,11 +171,17 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' && inputs.environment == 'prod'
     environment: prod
+    env:
+      TFC_TOKEN: ${{ secrets.TF_API_TOKEN }}
+      TFC_ORGANIZATION: maroonvillage-hcp-organization
     defaults:
       run:
         working-directory: environments/prod
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set ECR image tag
+        run: echo 'ecr_image_tag = "${{ inputs.ecr_image_tag }}"' > ecr_image_tag_override.auto.tfvars
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -171,5 +191,22 @@ jobs:
       - name: Terraform Init
         run: terraform init
 
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="ecr_image_tag=${{ inputs.ecr_image_tag }}"
+      - name: Upload Configuration
+        uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
+        id: upload
+        with:
+          workspace: parseon-agentic-prod
+          directory: environments/prod
+
+      - name: Create Run
+        uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
+        id: run
+        with:
+          workspace: parseon-agentic-prod
+          configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
+
+      - name: Apply Run
+        uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.3.2
+        with:
+          run: ${{ steps.run.outputs.run_id }}
+          comment: "Triggered by GitHub Actions (workflow_dispatch, ecr_image_tag=${{ inputs.ecr_image_tag }})"
