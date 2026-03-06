@@ -51,5 +51,5 @@ variable "backup_retention_period" {
 
 variable "engine_version" {
   type    = string
-  default = "15.4"
+  default = "15.10"
 }
