@@ -55,8 +55,9 @@ resource "aws_db_instance" "this" {
   backup_window           = "03:00-04:00"
   maintenance_window      = "Mon:04:00-Mon:05:00"
 
-  skip_final_snapshot = false
-  deletion_protection = true
+  skip_final_snapshot       = var.skip_final_snapshot
+  final_snapshot_identifier = var.skip_final_snapshot ? null : "${local.name_prefix}-final-snapshot"
+  deletion_protection       = var.deletion_protection
 
   apply_immediately = false
 

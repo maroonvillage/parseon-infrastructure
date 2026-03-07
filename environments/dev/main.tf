@@ -71,6 +71,8 @@ module "rds" {
   db_username           = var.db_username
   db_password           = var.db_password
   multi_az              = false
+  skip_final_snapshot   = true
+  deletion_protection   = false
 }
 
 # ---------------------------------------------------------------------------

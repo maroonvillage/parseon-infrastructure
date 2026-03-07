@@ -53,3 +53,15 @@ variable "engine_version" {
   type    = string
   default = "15.10"
 }
+
+variable "skip_final_snapshot" {
+  description = "Skip final snapshot on destroy. Set true for dev/ephemeral environments."
+  type        = bool
+  default     = false
+}
+
+variable "deletion_protection" {
+  description = "Enable deletion protection. Set false to allow terraform destroy."
+  type        = bool
+  default     = true
+}
