@@ -30,8 +30,8 @@ output "ecs_service_name" {
   value       = module.ecs_service.service_name
 }
 
-output "github_actions_role_arn" {
-  description = "IAM role ARN for GitHub Actions OIDC — set as GH Actions variable GITHUB_ACTIONS_ROLE_ARN"
+output "PARSEON_DEV_ACTIONS_ROLE_ARN" {
+  description = "IAM role ARN for GitHub Actions OIDC — set as GH Actions variable PARSEON_DEV_ACTIONS_ROLE_ARN"
   value       = module.github_oidc.role_arn
 }
 
