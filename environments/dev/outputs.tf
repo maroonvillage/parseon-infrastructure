@@ -25,6 +25,16 @@ output "ecs_cluster_name" {
   value       = module.ecs_cluster.cluster_name
 }
 
+output "ecs_service_name" {
+  description = "ECS service name — set as GH Actions variable ECS_SERVICE_STAGING"
+  value       = module.ecs_service.service_name
+}
+
+output "github_actions_role_arn" {
+  description = "IAM role ARN for GitHub Actions OIDC — set as GH Actions variable GITHUB_ACTIONS_ROLE_ARN"
+  value       = module.github_oidc.role_arn
+}
+
 output "rds_endpoint" {
   description = "RDS instance endpoint (host:port)"
   value       = module.rds.db_endpoint

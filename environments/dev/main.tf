@@ -142,3 +142,15 @@ module "cloudfront" {
   alb_dns_name        = module.alb.alb_dns_name
   acm_certificate_arn = var.cloudfront_certificate_arn
 }
+
+# ---------------------------------------------------------------------------
+# GitHub Actions OIDC
+# ---------------------------------------------------------------------------
+module "github_oidc" {
+  source = "../../modules/github_oidc"
+
+  name_prefix          = "${var.project_name}-${var.environment}"
+  github_repository    = var.github_repository
+  ecr_repository_arns  = [module.ecr.repository_arn]
+  create_oidc_provider = var.create_github_oidc_provider
+}

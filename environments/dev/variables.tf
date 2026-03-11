@@ -92,6 +92,18 @@ variable "enable_rds_iam_auth" {
   default     = false
 }
 
+# ── GitHub Actions OIDC ────────────────────────────────────────────────────────
+variable "github_repository" {
+  description = "GitHub repository in 'owner/repo' format — used to scope the OIDC trust policy"
+  type        = string
+}
+
+variable "create_github_oidc_provider" {
+  description = "Set to false if the GitHub Actions OIDC provider already exists in this AWS account"
+  type        = bool
+  default     = true
+}
+
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 variable "alb_certificate_arn" {
   description = "ARN of the ACM certificate for the ALB HTTPS listener. Leave null until a certificate exists."
