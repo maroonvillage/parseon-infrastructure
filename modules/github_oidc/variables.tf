@@ -18,3 +18,15 @@ variable "create_oidc_provider" {
   type        = bool
   default     = true
 }
+
+variable "frontend_bucket_arn" {
+  description = "ARN of the S3 bucket hosting frontend static assets. When set, grants the CI/CD role permission to sync build artifacts."
+  type        = string
+  default     = null
+}
+
+variable "cloudfront_distribution_arn" {
+  description = "ARN of the CloudFront distribution. When set, grants the CI/CD role permission to create cache invalidations."
+  type        = string
+  default     = null
+}

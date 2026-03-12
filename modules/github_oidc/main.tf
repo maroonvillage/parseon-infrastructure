@@ -107,6 +107,36 @@ data "aws_iam_policy_document" "github_actions" {
     ]
     resources = ["*"]
   }
+
+  # Frontend — sync React build artifacts to the S3 frontend bucket
+  dynamic "statement" {
+    for_each = var.frontend_bucket_arn != null ? [1] : []
+    content {
+      sid    = "FrontendS3Sync"
+      effect = "Allow"
+      actions = [
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:ListBucket",
+      ]
+      resources = [
+        var.frontend_bucket_arn,
+        "${var.frontend_bucket_arn}/*",
+      ]
+    }
+  }
+
+  # Frontend — invalidate stale CloudFront cache after each deploy
+  dynamic "statement" {
+    for_each = var.cloudfront_distribution_arn != null ? [1] : []
+    content {
+      sid       = "CloudFrontInvalidate"
+      effect    = "Allow"
+      actions   = ["cloudfront:CreateInvalidation"]
+      resources = [var.cloudfront_distribution_arn]
+    }
+  }
 }
 
 resource "aws_iam_policy" "github_actions" {

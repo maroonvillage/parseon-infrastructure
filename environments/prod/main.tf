@@ -41,6 +41,11 @@ module "s3" {
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
+module "s3_frontend" {
+  source      = "../../modules/s3_frontend"
+  name_prefix = "${var.project_name}-${var.environment}"
+}
+
 module "sqs" {
   source      = "../../modules/sqs"
   name_prefix = "${var.project_name}-${var.environment}"
@@ -140,4 +145,8 @@ module "cloudfront" {
   name_prefix         = "${var.project_name}-${var.environment}"
   alb_dns_name        = module.alb.alb_dns_name
   acm_certificate_arn = var.cloudfront_certificate_arn
+
+  s3_frontend_bucket_id                   = module.s3_frontend.bucket_id
+  s3_frontend_bucket_arn                  = module.s3_frontend.bucket_arn
+  s3_frontend_bucket_regional_domain_name = module.s3_frontend.bucket_regional_domain_name
 }

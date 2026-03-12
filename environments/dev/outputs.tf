@@ -45,6 +45,16 @@ output "s3_bucket_id" {
   value       = module.s3.bucket_id
 }
 
+output "frontend_bucket_id" {
+  description = "Frontend S3 bucket name — sync React build artifacts here: aws s3 sync build/ s3://<bucket> --delete"
+  value       = module.s3_frontend.bucket_id
+}
+
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID — use for cache invalidations after a frontend deploy"
+  value       = module.cloudfront.distribution_id
+}
+
 output "sqs_queue_url" {
   description = "SQS queue URL"
   value       = module.sqs.queue_url
