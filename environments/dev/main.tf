@@ -138,6 +138,11 @@ module "ecs_service" {
 
   security_group_id = module.security_groups.ecs_api_sg_id
   target_group_arn  = module.alb.target_group_arn
+
+  # The ECS service requires the target group to be attached to an ALB listener
+  # before it can register tasks. This explicit dependency ensures all ALB
+  # resources (including listeners) are fully created first.
+  depends_on = [module.alb]
 }
 
 module "cloudfront" {
