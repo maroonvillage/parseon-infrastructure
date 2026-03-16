@@ -79,7 +79,8 @@ SCRIPTS=(
 TOTAL_PASS=0
 TOTAL_FAIL=0
 TOTAL_WARN=0
-declare -A RESULTS
+FAILED_SCRIPTS=""
+SKIPPED_SCRIPTS=""
 
 echo ""
 echo -e "${BOLD}${BLUE}╔══════════════════════════════════════════════╗${NC}"
@@ -91,6 +92,7 @@ for script in "${SCRIPTS[@]}"; do
   script_path="$CHECKS_DIR/$script"
   if [[ ! -f "$script_path" ]]; then
     echo -e "${YELLOW}⚠ WARN${NC}  Script not found: $script — skipping"
+    SKIPPED_SCRIPTS="$SKIPPED_SCRIPTS $script"
     continue
   fi
   # Run in a subshell so each script's FAILURES/WARNINGS are independent
@@ -98,19 +100,18 @@ for script in "${SCRIPTS[@]}"; do
   script_exit=$?
   echo "$script_output"
 
-  # Extract failure/warning counts from the summary line
-  fail_count=$(echo "$script_output" | grep -oP '\d+(?= failure)' | head -1 || true)
-  warn_count=$(echo "$script_output" | grep -oP '\d+(?= warning)' | head -1 || true)
+  # Extract failure/warning counts (macOS-compatible: no grep -P)
+  fail_count=$(echo "$script_output" | grep -oE '[0-9]+ failure' | grep -oE '^[0-9]+' | head -1 || true)
+  warn_count=$(echo "$script_output" | grep -oE '[0-9]+ warning' | grep -oE '^[0-9]+' | head -1 || true)
   fail_count="${fail_count:-0}"
   warn_count="${warn_count:-0}"
 
   TOTAL_FAIL=$((TOTAL_FAIL + fail_count))
   TOTAL_WARN=$((TOTAL_WARN + warn_count))
   if [[ $script_exit -eq 0 ]]; then
-    RESULTS[$script]="PASS"
     TOTAL_PASS=$((TOTAL_PASS + 1))
   else
-    RESULTS[$script]="FAIL"
+    FAILED_SCRIPTS="$FAILED_SCRIPTS $script"
   fi
 done
 
@@ -120,12 +121,12 @@ echo -e "${BOLD}${BLUE}━━━━━━━━━━━━━━━━━━━
 echo -e "${BOLD}  PHASE 1 SUMMARY${NC}"
 echo -e "${BOLD}${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 for script in "${SCRIPTS[@]}"; do
-  if [[ "${RESULTS[$script]+_}" ]]; then
-    if [[ "${RESULTS[$script]}" == "PASS" ]]; then
-      echo -e "  ${GREEN}✔${NC}  $script"
-    else
-      echo -e "  ${RED}✖${NC}  $script"
-    fi
+  if echo "$SKIPPED_SCRIPTS" | grep -qF "$script"; then
+    echo -e "  ${YELLOW}–${NC}  $script  (skipped)"
+  elif echo "$FAILED_SCRIPTS" | grep -qF "$script"; then
+    echo -e "  ${RED}✖${NC}  $script"
+  else
+    echo -e "  ${GREEN}✔${NC}  $script"
   fi
 done
 echo ""
