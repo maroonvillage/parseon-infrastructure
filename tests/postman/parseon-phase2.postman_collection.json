@@ -1,0 +1,641 @@
+{
+  "info": {
+    "name": "Parseon Phase 2 — Application Smoke Tests",
+    "_postman_id": "parseon-phase2-smoke",
+    "description": "Phase 2 smoke tests for the Parseon API. Run against the dev or prod environment using the matching Postman environment file.\n\nOrder:\n1. Health Checks\n2. Auth\n3. Upload\n4. Process\n5. Golden Workflow",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "file_id", "value": "", "type": "string" },
+    { "key": "job_id", "value": "", "type": "string" },
+    { "key": "task_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "1 · Health Checks",
+      "item": [
+        {
+          "name": "GET /health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('status is ok', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.eql('ok');",
+                  "});",
+                  "pm.test('version field present', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('version');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "GET /health/detailed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is JSON', () => pm.response.to.be.json);",
+                  "pm.test('Response time < 5s', () => pm.expect(pm.response.responseTime).to.be.below(5000));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health/detailed",
+              "host": ["{{base_url}}"],
+              "path": ["health", "detailed"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/rag/health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Response is JSON', () => pm.response.to.be.json);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/rag/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rag", "health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2 · Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('access_token returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('access_token');",
+                  "  pm.collectionVariables.set('access_token', body.access_token);",
+                  "});",
+                  "pm.test('refresh_token returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('refresh_token');",
+                  "  pm.collectionVariables.set('refresh_token', body.refresh_token);",
+                  "});",
+                  "pm.test('token_type is bearer', () => {",
+                  "  pm.expect(pm.response.json().token_type).to.eql('bearer');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/auth/me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('username returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('username');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/verify",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/auth/refresh",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('new access_token returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('access_token');",
+                  "  pm.collectionVariables.set('access_token', body.access_token);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Reject bad credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 on bad credentials', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nouser\",\n  \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Reject missing token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 without token', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 · Upload",
+      "item": [
+        {
+          "name": "POST /api/files/upload",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test('file_id returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('file_id');",
+                  "  pm.collectionVariables.set('file_id', body.file_id);",
+                  "});",
+                  "pm.test('storage_backend is s3', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.file_info.storage_backend).to.eql('s3');",
+                  "});",
+                  "pm.test('processing_ready is true', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.processing_ready).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "{{test_pdf_path}}" },
+                {
+                  "key": "description",
+                  "value": "Smoke test document",
+                  "type": "text"
+                },
+                { "key": "tags", "value": "smoke,test", "type": "text" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/files/:file_id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('file_id matches', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.file_id).to.eql(pm.collectionVariables.get('file_id'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/{{file_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "{{file_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Reject upload without auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 401 without token', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "{{test_pdf_path}}" }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4 · Process",
+      "item": [
+        {
+          "name": "POST /api/files/process (static mode)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 or 202', () => pm.expect(pm.response.code).to.be.oneOf([200, 202]));",
+                  "pm.test('job_id returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('job_id');",
+                  "  pm.collectionVariables.set('job_id', body.job_id);",
+                  "});",
+                  "pm.test('status is queued or processing', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body.status).to.be.oneOf(['queued', 'processing']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_ids\": [\"{{file_id}}\"],\n  \"mode\": \"static\",\n  \"custom_instructions\": \"Extract key topics and a brief summary.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/process",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "process"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/files/process/:job_id/status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('status field present', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.have.property('status');",
+                  "  pm.expect(body.status).to.be.oneOf(['queued', 'processing', 'completed', 'failed']);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/process/{{job_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "process", "{{job_id}}", "status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5 · Golden Workflow",
+      "description": "Full end-to-end test. Run requests in order. Prerequisite: login request in folder 2 must have run first to set access_token.",
+      "item": [
+        {
+          "name": "Step 1 — Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login success', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', body.access_token);",
+                  "pm.collectionVariables.set('refresh_token', body.refresh_token);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{test_username}}\",\n  \"password\": \"{{test_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Step 2 — Upload test document",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Upload success', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.file_id, 'file_id must be returned').to.exist;",
+                  "pm.collectionVariables.set('file_id', body.file_id);",
+                  "pm.test('Stored in S3', () => pm.expect(body.file_info.storage_backend).to.eql('s3'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "{{test_pdf_path}}" },
+                {
+                  "key": "description",
+                  "value": "Golden workflow smoke test",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Step 3 — Trigger processing",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Processing accepted', () => pm.expect(pm.response.code).to.be.oneOf([200, 202]));",
+                  "const body = pm.response.json();",
+                  "pm.expect(body.job_id, 'job_id must be returned').to.exist;",
+                  "pm.collectionVariables.set('job_id', body.job_id);",
+                  "console.log('job_id:', body.job_id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"file_ids\": [\"{{file_id}}\"],\n  \"mode\": \"static\",\n  \"custom_instructions\": \"Extract key topics.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/files/process",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "process"]
+            }
+          }
+        },
+        {
+          "name": "Step 4 — Poll job status (manual poll — re-run until completed)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test('Job status is valid', () => {",
+                  "  pm.expect(body.status).to.be.oneOf(['queued', 'processing', 'completed', 'failed']);",
+                  "});",
+                  "if (body.status === 'completed') {",
+                  "  console.log('✔ Job completed successfully.');",
+                  "} else if (body.status === 'failed') {",
+                  "  pm.test('Job must not fail', () => pm.expect(body.status).to.not.eql('failed'));",
+                  "} else {",
+                  "  console.log('Job still running (' + body.status + ') — re-run this request to poll again.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/process/{{job_id}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "process", "{{job_id}}", "status"]
+            }
+          }
+        },
+        {
+          "name": "Step 5 — Retrieve results",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Results returned', () => {",
+                  "  const body = pm.response.json();",
+                  "  pm.expect(body).to.be.an('object');",
+                  "  console.log('Result keys:', Object.keys(body).join(', '));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/files/process/{{job_id}}/results",
+              "host": ["{{base_url}}"],
+              "path": ["api", "files", "process", "{{job_id}}", "results"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

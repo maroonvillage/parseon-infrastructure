@@ -35,6 +35,45 @@ ECS_TASK_ROLE="${ECS_TASK_ROLE:-${NAME_PREFIX}-ecs-task-role}"
 ECS_EXEC_ROLE="${ECS_EXEC_ROLE:-${NAME_PREFIX}-ecs-exec-role}"
 CW_LOG_GROUP="${CW_LOG_GROUP:-/ecs/${NAME_PREFIX}}"
 
+# ── Phase 2: Application smoke test settings ───────────────────────────────────
+# API_BASE_URL is resolved from Terraform outputs (alb_dns_name) by run_phase2.sh.
+# Override manually: export API_BASE_URL=https://your-alb-dns.us-east-1.elb.amazonaws.com
+API_BASE_URL="${API_BASE_URL:-}"
+
+# Test credentials — never hardcode real values here.
+# Set these before running: export TEST_USERNAME=smoketest TEST_PASSWORD=yourpass
+TEST_USERNAME="${TEST_USERNAME:-}"
+TEST_PASSWORD="${TEST_PASSWORD:-}"
+
+# Token file: auth script writes the token here; downstream scripts read it.
+TOKEN_FILE="${TMPDIR:-/tmp}/parseon_smoke_token_${ENVIRONMENT}"
+
+# Processing timeout for the golden workflow (seconds)
+PROCESS_TIMEOUT="${PROCESS_TIMEOUT:-300}"
+# Poll interval when waiting for a job to complete (seconds)
+POLL_INTERVAL="${POLL_INTERVAL:-5}"
+
+# Require API base URL to be set and non-empty
+require_api_url() {
+  if [[ -z "$API_BASE_URL" ]]; then
+    echo -e "${RED}ERROR: API_BASE_URL is not set.${NC}" >&2
+    echo -e "       Export it or run via ./tests/run_phase2.sh which resolves it from Terraform outputs." >&2
+    exit 1
+  fi
+  # Strip trailing slash for consistent URL construction
+  API_BASE_URL="${API_BASE_URL%/}"
+}
+
+# Read the cached auth token written by 02_auth.sh
+read_token() {
+  if [[ ! -f "$TOKEN_FILE" ]]; then
+    echo -e "${RED}ERROR: No auth token found at $TOKEN_FILE.${NC}" >&2
+    echo -e "       Run tests/phase2/02_auth.sh first (or run_phase2.sh)." >&2
+    exit 1
+  fi
+  cat "$TOKEN_FILE"
+}
+
 # ── Output helpers ─────────────────────────────────────────────────────────────
 GREEN='\033[0;32m'
 RED='\033[0;31m'
