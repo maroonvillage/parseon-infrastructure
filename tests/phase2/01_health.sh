@@ -22,14 +22,14 @@ http_get() {
   local url="$1"
   local response http_status body start_ms elapsed_ms
 
-  start_ms=$(date +%s%3N 2>/dev/null || date +%s)
+  start_ms=$(( $(date +%s) * 1000 ))
   response=$(curl -s -w "\n__STATUS__%{http_code}" \
-    --max-time 10 --location "$url" 2>/dev/null || echo -e "\n__STATUS__000")
-  end_ms=$(date +%s%3N 2>/dev/null || date +%s)
+    --max-time 10 --location "$url" 2>/dev/null)
+  end_ms=$(( $(date +%s) * 1000 ))
   elapsed_ms=$(( end_ms - start_ms ))
 
-  http_status=$(echo "$response" | grep -o '__STATUS__[0-9]*' | grep -o '[0-9]*')
-  body=$(echo "$response" | sed 's/__STATUS__[0-9]*$//')
+  http_status=$(echo "$response" | grep -oE '__STATUS__[0-9]+' | tail -1 | grep -oE '[0-9]+')
+  body=$(echo "$response" | grep -v '__STATUS__')
 
   echo "$http_status|$body|$elapsed_ms"
 }

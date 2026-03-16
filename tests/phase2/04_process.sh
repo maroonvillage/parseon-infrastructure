@@ -44,14 +44,14 @@ fi
 info "Using file_id: $FILE_ID"
 
 # ── Helper ────────────────────────────────────────────────────────────────────
-parse_status() { echo "$1" | grep -o '__STATUS__[0-9]*' | grep -o '[0-9]*'; }
-parse_body()   { echo "$1" | sed 's/__STATUS__[0-9]*$//'; }
+parse_status() { echo "$1" | grep -oE '__STATUS__[0-9]+' | tail -1 | grep -oE '[0-9]+'; }
+parse_body()   { echo "$1" | grep -v '__STATUS__'; }
 
 http_get_auth() {
   local url="$1" token="$2"
   curl -s -w "\n__STATUS__%{http_code}" --max-time 10 \
     -H "Authorization: Bearer $token" "$url" \
-    2>/dev/null || echo -e "\n__STATUS__000"
+    2>/dev/null
 }
 
 # ── 1. Process without auth → 401 ────────────────────────────────────────────
@@ -59,7 +59,7 @@ info "Testing process without auth token (expect 401) …"
 NO_AUTH_RESP=$(curl -s -w "\n__STATUS__%{http_code}" --max-time 10 \
   -H "Content-Type: application/json" \
   -d "{\"file_ids\":[\"${FILE_ID}\"],\"mode\":\"static\"}" \
-  "${API_BASE_URL}/api/files/process" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/process" 2>/dev/null)
 NO_AUTH_STATUS=$(parse_status "$NO_AUTH_RESP")
 
 if [[ "$NO_AUTH_STATUS" == "401" || "$NO_AUTH_STATUS" == "403" ]]; then
@@ -80,7 +80,7 @@ PROCESS_RESP=$(curl -s -w "\n__STATUS__%{http_code}" --max-time 15 \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d "$PROCESS_PAYLOAD" \
-  "${API_BASE_URL}/api/files/process" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/process" 2>/dev/null)
 PROCESS_STATUS=$(parse_status "$PROCESS_RESP")
 PROCESS_BODY=$(parse_body "$PROCESS_RESP")
 

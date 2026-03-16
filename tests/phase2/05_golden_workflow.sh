@@ -31,22 +31,22 @@ if [[ -z "$TEST_USERNAME" || -z "$TEST_PASSWORD" ]]; then
 fi
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-parse_status() { echo "$1" | grep -o '__STATUS__[0-9]*' | grep -o '[0-9]*'; }
-parse_body()   { echo "$1" | sed 's/__STATUS__[0-9]*$//'; }
+parse_status() { echo "$1" | grep -oE '__STATUS__[0-9]+' | tail -1 | grep -oE '[0-9]+'; }
+parse_body()   { echo "$1" | grep -v '__STATUS__'; }
 
 post_json() {
   local url="$1" payload="$2" token="${3:-}"
   local args=(-s -w "\n__STATUS__%{http_code}" --max-time 15
     -H "Content-Type: application/json" -d "$payload")
   [[ -n "$token" ]] && args+=(-H "Authorization: Bearer $token")
-  curl "${args[@]}" "$url" 2>/dev/null || echo -e "\n__STATUS__000"
+  curl "${args[@]}" "$url" 2>/dev/null
 }
 
 get_auth() {
   local url="$1" token="$2"
   curl -s -w "\n__STATUS__%{http_code}" --max-time 10 \
     -H "Authorization: Bearer $token" "$url" \
-    2>/dev/null || echo -e "\n__STATUS__000"
+    2>/dev/null
 }
 
 step_fail() {
@@ -77,7 +77,7 @@ WORKFLOW_START=$(date +%s)
 STEP=1
 info "[Step $STEP/7] Health check …"
 HEALTH_RESP=$(curl -s -w "\n__STATUS__%{http_code}" --max-time 5 \
-  "${API_BASE_URL}/health" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/health" 2>/dev/null)
 HEALTH_STATUS=$(parse_status "$HEALTH_RESP")
 [[ "$HEALTH_STATUS" == "200" ]] || step_fail "$STEP" "GET /health returned HTTP $HEALTH_STATUS"
 pass "Step $STEP: GET /health → 200"
@@ -104,7 +104,7 @@ UPLOAD_RESP=$(curl -s -w "\n__STATUS__%{http_code}" --max-time 30 \
   -F "file=@${TEST_PDF};type=application/pdf" \
   -F "description=Golden workflow E2E smoke test" \
   -F "tags=golden,smoke,e2e" \
-  "${API_BASE_URL}/api/files/upload" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/upload" 2>/dev/null)
 UPLOAD_STATUS=$(parse_status "$UPLOAD_RESP")
 UPLOAD_BODY=$(parse_body "$UPLOAD_RESP")
 [[ "$UPLOAD_STATUS" == "200" || "$UPLOAD_STATUS" == "201" ]] || \

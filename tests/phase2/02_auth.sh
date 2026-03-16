@@ -42,7 +42,7 @@ http_post_json() {
     -H "Content-Type: application/json"
     -d "$payload")
   [[ -n "$auth_header" ]] && args+=(-H "Authorization: $auth_header")
-  curl "${args[@]}" "$url" 2>/dev/null || echo -e "\n__STATUS__000"
+  curl "${args[@]}" "$url" 2>/dev/null
 }
 
 http_get_auth() {
@@ -50,11 +50,11 @@ http_get_auth() {
   local token="${2:-}"
   local args=(-s -w "\n__STATUS__%{http_code}" --max-time 10)
   [[ -n "$token" ]] && args+=(-H "Authorization: Bearer $token")
-  curl "${args[@]}" "$url" 2>/dev/null || echo -e "\n__STATUS__000"
+  curl "${args[@]}" "$url" 2>/dev/null
 }
 
-parse_status() { echo "$1" | grep -o '__STATUS__[0-9]*' | grep -o '[0-9]*'; }
-parse_body()   { echo "$1" | sed 's/__STATUS__[0-9]*$//'; }
+parse_status() { echo "$1" | grep -oE '__STATUS__[0-9]+' | tail -1 | grep -oE '[0-9]+'; }
+parse_body()   { echo "$1" | grep -v '__STATUS__'; }
 
 # ── 1. Login ─────────────────────────────────────────────────────────────────
 info "POST /api/auth/login …"

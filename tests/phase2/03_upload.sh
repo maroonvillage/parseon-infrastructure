@@ -54,8 +54,8 @@ else
 fi
 
 # ── Helper ────────────────────────────────────────────────────────────────────
-parse_status() { echo "$1" | grep -o '__STATUS__[0-9]*' | grep -o '[0-9]*'; }
-parse_body()   { echo "$1" | sed 's/__STATUS__[0-9]*$//'; }
+parse_status() { echo "$1" | grep -oE '__STATUS__[0-9]+' | tail -1 | grep -oE '[0-9]+'; }
+parse_body()   { echo "$1" | grep -v '__STATUS__'; }
 
 # ── 1. Upload without auth → 401 ─────────────────────────────────────────────
 info "Testing upload without auth token (expect 401) …"
@@ -63,7 +63,7 @@ NO_AUTH_RESP=$(curl -s -w "\n__STATUS__%{http_code}" \
   --max-time 15 \
   -F "file=@${TEST_PDF};type=application/pdf" \
   -F "description=smoke test unauthorized" \
-  "${API_BASE_URL}/api/files/upload" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/upload" 2>/dev/null)
 NO_AUTH_STATUS=$(parse_status "$NO_AUTH_RESP")
 
 if [[ "$NO_AUTH_STATUS" == "401" || "$NO_AUTH_STATUS" == "403" ]]; then
@@ -85,7 +85,7 @@ UPLOAD_RESP=$(curl -s -w "\n__STATUS__%{http_code}" \
   -F "file=@${TEST_PDF};type=application/pdf" \
   -F "description=Parseon Phase 2 smoke test document" \
   -F "tags=smoke,test,phase2" \
-  "${API_BASE_URL}/api/files/upload" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/upload" 2>/dev/null)
 UPLOAD_STATUS=$(parse_status "$UPLOAD_RESP")
 UPLOAD_BODY=$(parse_body "$UPLOAD_RESP")
 
@@ -131,7 +131,7 @@ info "GET /api/files/${FILE_ID} …"
 GET_RESP=$(curl -s -w "\n__STATUS__%{http_code}" \
   --max-time 10 \
   -H "Authorization: Bearer $TOKEN" \
-  "${API_BASE_URL}/api/files/${FILE_ID}" 2>/dev/null || echo -e "\n__STATUS__000")
+  "${API_BASE_URL}/api/files/${FILE_ID}" 2>/dev/null)
 GET_STATUS=$(parse_status "$GET_RESP")
 GET_BODY=$(parse_body "$GET_RESP")
 
