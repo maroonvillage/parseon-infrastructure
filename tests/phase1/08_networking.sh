@@ -125,7 +125,7 @@ find_sg() {
 }
 
 ALB_SG_ID=$(find_sg "alb")
-ECS_SG_ID=$(find_sg "ecs|api")
+ECS_SG_ID=$(find_sg "ecs-api")
 RDS_SG_ID=$(find_sg "rds|db")
 
 # ── 5a. ALB SG — inbound 80/443 from anywhere ─────────────────────────────────

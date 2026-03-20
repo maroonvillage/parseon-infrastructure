@@ -6,6 +6,14 @@ resource "aws_security_group" "alb" {
   vpc_id      = var.vpc_id
 
   ingress {
+    description = "Allow HTTP from internet"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_ingress_cidr_blocks
+  }
+
+  ingress {
     description = "Allow HTTPS from internet"
     from_port   = 443
     to_port     = 443
@@ -78,10 +86,10 @@ resource "aws_security_group" "rds" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description     = "Allow PostgreSQL from ECS API"
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
+    description = "Allow PostgreSQL from ECS API"
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
     security_groups = [
       aws_security_group.ecs_api.id,
       aws_security_group.ecs_worker.id
