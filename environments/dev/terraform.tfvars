@@ -25,8 +25,9 @@ secrets_arns        = [] # e.g. ["arn:aws:secretsmanager:us-east-1:123456789012:
 enable_rds_iam_auth = false
 
 # ── GitHub Actions OIDC ────────────────────────────────────────────────────────
-# Replace with your actual GitHub org/username and repository name.
-github_repository           = "your-org/parseon-agentic-backend"
+# Must match the exact GitHub 'owner/repository' path.
+# Example: "coleparsons/parseon-agentic-backend"
+github_repository           = "coleparsons/parseon-agentic-backend"
 create_github_oidc_provider = true # Set to false if provider already exists in this account
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
