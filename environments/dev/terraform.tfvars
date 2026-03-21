@@ -27,7 +27,7 @@ enable_rds_iam_auth = false
 # ── GitHub Actions OIDC ────────────────────────────────────────────────────────
 # Must match the exact GitHub 'owner/repository' path.
 # Example: "coleparsons/parseon-agentic-backend"
-github_repository           = "coleparsons/parseon-agentic-backend"
+github_repository           = "maroonvillage/parseon-agentic-backend"
 create_github_oidc_provider = true # Set to false if provider already exists in this account
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
