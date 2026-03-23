@@ -117,7 +117,7 @@ jobs:
           token: ${{ secrets.TF_API_TOKEN }}
           organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-dev
-          directory: environments/dev
+          directory: .
 
       - name: Create Run
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
@@ -204,7 +204,7 @@ jobs:
           token: ${{ secrets.TF_API_TOKEN }}
           organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-prod
-          directory: environments/prod
+          directory: .
 
       - name: Create Run
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
