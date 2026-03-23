@@ -114,6 +114,8 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
         id: upload
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-dev
           directory: environments/dev
 
@@ -121,6 +123,8 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: run
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-dev
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
 
@@ -129,6 +133,8 @@ jobs:
         id: apply
         continue-on-error: true
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           run: ${{ steps.run.outputs.run_id }}
           comment: "Triggered by GitHub Actions (push to main, commit ${{ github.sha }})"
 
@@ -195,6 +201,8 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
         id: upload
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-prod
           directory: environments/prod
 
@@ -202,11 +210,15 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: run
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-prod
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
 
       - name: Apply Run
         uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.3.2
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           run: ${{ steps.run.outputs.run_id }}
           comment: "Triggered by GitHub Actions (workflow_dispatch, ecr_image_tag=${{ inputs.ecr_image_tag }})"
