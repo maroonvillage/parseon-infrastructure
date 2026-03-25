@@ -29,6 +29,7 @@ enable_rds_iam_auth = false
 # Example: "coleparsons/parseon-agentic-backend"
 github_repository           = "maroonvillage/parseon-agentic-backend"
 create_github_oidc_provider = true # Set to false if provider already exists in this account
+frontend_github_repository  = "maroonvillage/parseon-web-ui"
 
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 # Both ARNs must be created in ACM before applying. CloudFront cert MUST be in us-east-1.

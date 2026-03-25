@@ -9,8 +9,9 @@ variable "github_repository" {
 }
 
 variable "ecr_repository_arns" {
-  description = "ARNs of the ECR repositories GitHub Actions is allowed to push to"
+  description = "ARNs of the ECR repositories GitHub Actions is allowed to push to. Leave empty for roles that do not need container image access (e.g. frontend-only roles)."
   type        = list(string)
+  default     = []
 }
 
 variable "create_oidc_provider" {

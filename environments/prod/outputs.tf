@@ -49,3 +49,13 @@ output "sqs_queue_url" {
   description = "SQS queue URL"
   value       = module.sqs.queue_url
 }
+
+output "backend_actions_role_arn" {
+  description = "IAM role ARN for backend CI/CD — set as GH Actions variable PARSEON_PROD_ACTIONS_ROLE_ARN in parseon-agentic-backend"
+  value       = module.github_oidc.role_arn
+}
+
+output "frontend_actions_role_arn" {
+  description = "IAM role ARN for the frontend CI/CD pipeline — set as GH Actions variable PARSEON_PROD_FRONTEND_ROLE_ARN in the parseon-web-ui repo"
+  value       = module.github_oidc_frontend.role_arn
+}

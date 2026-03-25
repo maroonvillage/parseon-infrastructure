@@ -72,40 +72,49 @@ resource "aws_iam_role" "github_actions" {
 
 data "aws_iam_policy_document" "github_actions" {
   # ECR GetAuthorizationToken is not resource-scoped — AWS requires "*"
-  statement {
-    sid       = "ECRAuth"
-    effect    = "Allow"
-    actions   = ["ecr:GetAuthorizationToken"]
-    resources = ["*"]
+  dynamic "statement" {
+    for_each = length(var.ecr_repository_arns) > 0 ? [1] : []
+    content {
+      sid       = "ECRAuth"
+      effect    = "Allow"
+      actions   = ["ecr:GetAuthorizationToken"]
+      resources = ["*"]
+    }
   }
 
   # ECR image push/pull scoped to the specific repository ARNs
-  statement {
-    sid    = "ECRPush"
-    effect = "Allow"
-    actions = [
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "ecr:PutImage",
-      "ecr:InitiateLayerUpload",
-      "ecr:UploadLayerPart",
-      "ecr:CompleteLayerUpload",
-      "ecr:DescribeRepositories",
-      "ecr:ListImages",
-    ]
-    resources = var.ecr_repository_arns
+  dynamic "statement" {
+    for_each = length(var.ecr_repository_arns) > 0 ? [1] : []
+    content {
+      sid    = "ECRPush"
+      effect = "Allow"
+      actions = [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:BatchGetImage",
+        "ecr:PutImage",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload",
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+      ]
+      resources = var.ecr_repository_arns
+    }
   }
 
   # ECS — trigger a new deployment and wait for stability
-  statement {
-    sid    = "ECSDeploy"
-    effect = "Allow"
-    actions = [
-      "ecs:UpdateService",
-      "ecs:DescribeServices",
-    ]
-    resources = ["*"]
+  dynamic "statement" {
+    for_each = length(var.ecr_repository_arns) > 0 ? [1] : []
+    content {
+      sid    = "ECSDeploy"
+      effect = "Allow"
+      actions = [
+        "ecs:UpdateService",
+        "ecs:DescribeServices",
+      ]
+      resources = ["*"]
+    }
   }
 
   # Frontend — sync React build artifacts to the S3 frontend bucket

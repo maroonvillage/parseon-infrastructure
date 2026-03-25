@@ -92,3 +92,14 @@ variable "cloudfront_certificate_arn" {
   type        = string
   default     = null
 }
+
+# ── GitHub Actions OIDC ─────────────────────────────────────────────────────
+variable "github_repository" {
+  description = "GitHub repository for the backend in 'owner/repo' format"
+  type        = string
+}
+
+variable "frontend_github_repository" {
+  description = "GitHub repository for the frontend project in 'owner/repo' format — scopes the frontend OIDC role trust policy"
+  type        = string
+}

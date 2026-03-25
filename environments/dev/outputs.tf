@@ -35,6 +35,11 @@ output "PARSEON_DEV_ACTIONS_ROLE_ARN" {
   value       = module.github_oidc.role_arn
 }
 
+output "frontend_actions_role_arn" {
+  description = "IAM role ARN for the frontend CI/CD pipeline — set as GH Actions variable PARSEON_DEV_FRONTEND_ROLE_ARN in the parseon-web-ui repo"
+  value       = module.github_oidc_frontend.role_arn
+}
+
 output "rds_endpoint" {
   description = "RDS instance endpoint (host:port)"
   value       = module.rds.db_endpoint

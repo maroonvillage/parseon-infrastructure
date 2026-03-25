@@ -21,7 +21,9 @@ db_username = "parseon_admin"
 # ── IAM ────────────────────────────────────────────────────────────────────────
 secrets_arns        = []
 enable_rds_iam_auth = false
-
+# ── GitHub Actions OIDC ─────────────────────────────────────────────────────────────
+github_repository          = "maroonvillage/parseon-agentic-backend"
+frontend_github_repository = "maroonvillage/parseon-web-ui"
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 # Real ACM ARNs required in prod before applying
 alb_certificate_arn        = null

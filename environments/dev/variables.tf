@@ -104,6 +104,11 @@ variable "create_github_oidc_provider" {
   default     = true
 }
 
+variable "frontend_github_repository" {
+  description = "GitHub repository for the frontend project in 'owner/repo' format — scopes the frontend OIDC role trust policy"
+  type        = string
+}
+
 # ── TLS / CDN ──────────────────────────────────────────────────────────────────
 variable "alb_certificate_arn" {
   description = "ARN of the ACM certificate for the ALB HTTPS listener. Leave null until a certificate exists."

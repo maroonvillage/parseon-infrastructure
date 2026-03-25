@@ -171,3 +171,16 @@ module "github_oidc" {
   frontend_bucket_arn         = module.s3_frontend.bucket_arn
   cloudfront_distribution_arn = module.cloudfront.distribution_arn
 }
+
+# Dedicated least-privilege role for the frontend CI/CD pipeline.
+# Only has S3 sync + CloudFront invalidation — no ECR or ECS access.
+module "github_oidc_frontend" {
+  source = "../../modules/github_oidc"
+
+  name_prefix          = "${var.project_name}-${var.environment}-frontend"
+  github_repository    = var.frontend_github_repository
+  create_oidc_provider = false # Provider already created by github_oidc module above
+
+  frontend_bucket_arn         = module.s3_frontend.bucket_arn
+  cloudfront_distribution_arn = module.cloudfront.distribution_arn
+}
