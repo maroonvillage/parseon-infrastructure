@@ -83,12 +83,12 @@ jobs:
         run: exit 1
 
   # -------------------------------------------------------------------------
-  # Apply dev — runs automatically on every merge to main
+  # Apply dev — runs on every merge to main, or on workflow_dispatch with environment=dev
   # -------------------------------------------------------------------------
   apply-dev:
     name: Apply (dev)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.environment == 'dev')
     permissions:
       contents: read
       pull-requests: write
@@ -114,13 +114,17 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
         id: upload
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-dev
-          directory: environments/dev
+          directory: .
 
       - name: Create Run
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: run
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-dev
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
 
@@ -129,8 +133,10 @@ jobs:
         id: apply
         continue-on-error: true
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           run: ${{ steps.run.outputs.run_id }}
-          comment: "Triggered by GitHub Actions (push to main, commit ${{ github.sha }})"
+          comment: "Triggered by GitHub Actions (${{ github.event_name }}, commit ${{ github.sha }})"
 
       - name: Post apply result to merged PR
         uses: actions/github-script@v7
@@ -195,18 +201,24 @@ jobs:
         uses: hashicorp/tfc-workflows-github/actions/upload-configuration@v1.3.2
         id: upload
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-prod
-          directory: environments/prod
+          directory: .
 
       - name: Create Run
         uses: hashicorp/tfc-workflows-github/actions/create-run@v1.3.2
         id: run
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           workspace: parseon-agentic-prod
           configuration_version: ${{ steps.upload.outputs.configuration_version_id }}
 
       - name: Apply Run
         uses: hashicorp/tfc-workflows-github/actions/apply-run@v1.3.2
         with:
+          token: ${{ secrets.TF_API_TOKEN }}
+          organization: ${{ env.TFC_ORGANIZATION }}
           run: ${{ steps.run.outputs.run_id }}
           comment: "Triggered by GitHub Actions (workflow_dispatch, ecr_image_tag=${{ inputs.ecr_image_tag }})"
