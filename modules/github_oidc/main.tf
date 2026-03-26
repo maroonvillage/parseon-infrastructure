@@ -22,17 +22,17 @@ resource "aws_iam_openid_connect_provider" "github" {
 }
 
 data "aws_iam_openid_connect_provider" "github" {
-  # Only look up the provider from AWS when create_oidc_provider=false AND no ARN
-  # was passed in directly. When existing_oidc_provider_arn is set (e.g. from a
-  # sibling module), skip this data source entirely — it would fail during a fresh
-  # deploy because the provider hasn't been created yet.
-  count = (!var.create_oidc_provider && var.existing_oidc_provider_arn == null) ? 1 : 0
+  # Only look up from AWS when the provider already exists externally and no ARN
+  # was passed directly. Use lookup_oidc_provider=false (a literal bool) when
+  # passing existing_oidc_provider_arn from a sibling module — the ARN is a
+  # computed value and cannot be used in count expressions at plan time.
+  count = (!var.create_oidc_provider && var.lookup_oidc_provider) ? 1 : 0
   url   = "https://token.actions.githubusercontent.com"
 }
 
 locals {
   oidc_provider_arn = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : (
-    var.existing_oidc_provider_arn != null ? var.existing_oidc_provider_arn : data.aws_iam_openid_connect_provider.github[0].arn
+    var.lookup_oidc_provider ? data.aws_iam_openid_connect_provider.github[0].arn : var.existing_oidc_provider_arn
   )
 }
 

@@ -26,6 +26,12 @@ variable "existing_oidc_provider_arn" {
   default     = null
 }
 
+variable "lookup_oidc_provider" {
+  description = "When create_oidc_provider=false, set this to false to use existing_oidc_provider_arn directly instead of looking up the provider from AWS. Must be a literal bool (not a computed value) so Terraform can evaluate it at plan time."
+  type        = bool
+  default     = true
+}
+
 variable "frontend_bucket_arn" {
   description = "ARN of the S3 bucket hosting frontend static assets. When set, grants the CI/CD role permission to sync build artifacts."
   type        = string
