@@ -27,7 +27,9 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  oidc_provider_arn = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : data.aws_iam_openid_connect_provider.github[0].arn
+  oidc_provider_arn = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : (
+    var.existing_oidc_provider_arn != null ? var.existing_oidc_provider_arn : data.aws_iam_openid_connect_provider.github[0].arn
+  )
 }
 
 # ── Trust Policy ──────────────────────────────────────────────────────────────

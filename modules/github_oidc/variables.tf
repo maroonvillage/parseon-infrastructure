@@ -20,6 +20,12 @@ variable "create_oidc_provider" {
   default     = true
 }
 
+variable "existing_oidc_provider_arn" {
+  description = "ARN of an already-created GitHub OIDC provider to use when create_oidc_provider=false. Avoids a data-source lookup that fails during fresh deploys."
+  type        = string
+  default     = null
+}
+
 variable "frontend_bucket_arn" {
   description = "ARN of the S3 bucket hosting frontend static assets. When set, grants the CI/CD role permission to sync build artifacts."
   type        = string
