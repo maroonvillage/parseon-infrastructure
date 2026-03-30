@@ -103,3 +103,10 @@ variable "frontend_github_repository" {
   description = "GitHub repository for the frontend project in 'owner/repo' format — scopes the frontend OIDC role trust policy"
   type        = string
 }
+
+# ── Application Secrets ────────────────────────────────────────────────────────
+variable "jwt_secret_key" {
+  description = "Stable secret key used to sign and verify JWT tokens. Must be the same across all ECS tasks."
+  type        = string
+  sensitive   = true
+}

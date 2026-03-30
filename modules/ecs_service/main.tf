@@ -22,6 +22,8 @@ resource "aws_ecs_task_definition" "this" {
         containerPort = var.container_port
       }]
 
+      environment = var.environment_variables
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
