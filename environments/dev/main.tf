@@ -139,6 +139,14 @@ module "ecs_service" {
   security_group_id = module.security_groups.ecs_api_sg_id
   target_group_arn  = module.alb.target_group_arn
 
+  environment_variables = [
+    { name = "POSTGRES_HOST", value = split(":", module.rds.db_endpoint)[0] },
+    { name = "POSTGRES_PORT", value = tostring(module.rds.db_port) },
+    { name = "POSTGRES_DB", value = module.rds.db_name },
+    { name = "POSTGRES_USER", value = var.db_username },
+    { name = "POSTGRES_PASSWORD", value = var.db_password },
+  ]
+
   # The ECS service requires the target group to be attached to an ALB listener
   # before it can register tasks. This explicit dependency ensures all ALB
   # resources (including listeners) are fully created first.
