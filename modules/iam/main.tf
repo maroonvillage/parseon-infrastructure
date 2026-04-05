@@ -17,6 +17,46 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_managed" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
+# Inline policy granting the execution role access to pull secrets/parameters
+# at task launch (the `secrets:` block in container definitions).
+# The managed AmazonECSTaskExecutionRolePolicy does NOT include these.
+data "aws_iam_policy_document" "secrets_injection" {
+  count = (length(var.secrets_arns) + length(var.ssm_parameter_arns)) > 0 ? 1 : 0
+
+  dynamic "statement" {
+    for_each = length(var.secrets_arns) > 0 ? [1] : []
+    content {
+      sid    = "SecretsManagerRead"
+      effect = "Allow"
+      actions = [
+        "secretsmanager:GetSecretValue",
+        "secretsmanager:DescribeSecret",
+      ]
+      resources = var.secrets_arns
+    }
+  }
+
+  dynamic "statement" {
+    for_each = length(var.ssm_parameter_arns) > 0 ? [1] : []
+    content {
+      sid    = "SSMParameterRead"
+      effect = "Allow"
+      actions = [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+      ]
+      resources = var.ssm_parameter_arns
+    }
+  }
+}
+
+resource "aws_iam_role_policy" "secrets_injection" {
+  count  = (length(var.secrets_arns) + length(var.ssm_parameter_arns)) > 0 ? 1 : 0
+  name   = "${var.name_prefix}-secrets-injection"
+  role   = aws_iam_role.ecs_execution_role.name
+  policy = data.aws_iam_policy_document.secrets_injection[0].json
+}
 resource "aws_iam_role" "ecs_task_role" {
   name               = "${var.name_prefix}-ecs-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_task_trust.json

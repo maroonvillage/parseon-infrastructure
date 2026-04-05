@@ -32,7 +32,13 @@ variable "health_check_path" {
 variable "target_group_arn" { type = string }
 
 variable "environment_variables" {
-  description = "Environment variables to pass to the container"
+  description = "Environment variables to pass to the container (plain text, non-sensitive)"
   type        = list(object({ name = string, value = string }))
+  default     = []
+}
+
+variable "secret_variables" {
+  description = "Secrets injected at task launch from SSM Parameter Store or Secrets Manager. valueFrom must be the full parameter/secret ARN."
+  type        = list(object({ name = string, valueFrom = string }))
   default     = []
 }

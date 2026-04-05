@@ -53,14 +53,48 @@ module "sqs" {
 # ---------------------------------------------------------------------------
 # IAM (application roles — ECS task + execution)
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# SSM Parameter Store — non-sensitive config
+# ---------------------------------------------------------------------------
+module "ssm" {
+  source      = "../../modules/ssm"
+  environment = var.environment
+
+  parameters = {
+    "postgres/host"  = split(":", module.rds.db_endpoint)[0]
+    "postgres/port"  = tostring(module.rds.db_port)
+    "postgres/db"    = module.rds.db_name
+    "postgres/user"  = var.db_username
+    "s3/bucket_name" = module.s3.bucket_id
+    "sqs/queue_url"  = module.sqs.queue_url
+    "aws/region"     = var.aws_region
+  }
+}
+
 module "iam" {
   source = "../../modules/iam"
 
   name_prefix         = "${var.project_name}-${var.environment}"
   s3_bucket_arns      = [module.s3.bucket_arn]
   sqs_queue_arns      = [module.sqs.queue_arn]
-  secrets_arns        = var.secrets_arns
   enable_rds_iam_auth = var.enable_rds_iam_auth
+
+  # Execution role needs these to inject values via the container `secrets:` block
+  secrets_arns       = [aws_secretsmanager_secret.db_password.arn]
+  ssm_parameter_arns = values(module.ssm.parameter_arns)
+}
+
+# ---------------------------------------------------------------------------
+# Secrets Manager — sensitive values (passwords, API keys)
+# ---------------------------------------------------------------------------
+resource "aws_secretsmanager_secret" "db_password" {
+  name                    = "parseon/${var.environment}/db_password"
+  recovery_window_in_days = 0 # dev: allow immediate deletion without waiting period
+}
+
+resource "aws_secretsmanager_secret_version" "db_password" {
+  secret_id     = aws_secretsmanager_secret.db_password.id
+  secret_string = var.db_password
 }
 
 # ---------------------------------------------------------------------------
@@ -139,12 +173,22 @@ module "ecs_service" {
   security_group_id = module.security_groups.ecs_api_sg_id
   target_group_arn  = module.alb.target_group_arn
 
+  # Plain-text env vars (non-sensitive, not secret-injected)
   environment_variables = [
-    { name = "POSTGRES_HOST", value = split(":", module.rds.db_endpoint)[0] },
-    { name = "POSTGRES_PORT", value = tostring(module.rds.db_port) },
-    { name = "POSTGRES_DB", value = module.rds.db_name },
-    { name = "POSTGRES_USER", value = var.db_username },
-    { name = "POSTGRES_PASSWORD", value = var.db_password },
+    { name = "STORAGE_TYPE", value = "s3" },
+    { name = "AWS_REGION", value = var.aws_region },
+  ]
+
+  # Secrets and config pulled from SSM/Secrets Manager at task launch.
+  # ECS injects these as environment variables — the container never handles the ARNs.
+  secret_variables = [
+    { name = "POSTGRES_HOST", valueFrom = module.ssm.parameter_arns["postgres/host"] },
+    { name = "POSTGRES_PORT", valueFrom = module.ssm.parameter_arns["postgres/port"] },
+    { name = "POSTGRES_DB", valueFrom = module.ssm.parameter_arns["postgres/db"] },
+    { name = "POSTGRES_USER", valueFrom = module.ssm.parameter_arns["postgres/user"] },
+    { name = "POSTGRES_PASSWORD", valueFrom = aws_secretsmanager_secret.db_password.arn },
+    { name = "S3_BUCKET_NAME", valueFrom = module.ssm.parameter_arns["s3/bucket_name"] },
+    { name = "SQS_QUEUE_URL", valueFrom = module.ssm.parameter_arns["sqs/queue_url"] },
   ]
 
   # The ECS service requires the target group to be attached to an ALB listener

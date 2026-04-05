@@ -12,7 +12,15 @@ variable "sqs_queue_arns" {
 }
 
 variable "secrets_arns" {
-  type = list(string)
+  description = "Secrets Manager ARNs the ECS execution role can read at task launch (for secrets: injection)"
+  type        = list(string)
+  default     = []
+}
+
+variable "ssm_parameter_arns" {
+  description = "SSM Parameter Store ARNs the ECS execution role can read at task launch (for secrets: injection)"
+  type        = list(string)
+  default     = []
 }
 
 variable "enable_rds_iam_auth" {
