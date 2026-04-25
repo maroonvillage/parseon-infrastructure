@@ -14,7 +14,7 @@ provider "aws" {
 # Networking
 # ---------------------------------------------------------------------------
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "../../../modules/vpc"
 
   project_name         = var.project_name
   environment          = var.environment
@@ -24,7 +24,7 @@ module "vpc" {
 }
 
 module "security_groups" {
-  source = "../../modules/security_groups"
+  source = "../../../modules/security_groups"
 
   project_name = var.project_name
   environment  = var.environment
@@ -41,12 +41,12 @@ module "s3" {
 }
 
 module "s3_frontend" {
-  source      = "../../modules/s3_frontend"
+  source      = "../../../modules/s3_frontend"
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
 module "sqs" {
-  source      = "../../modules/sqs"
+  source      = "../../../modules/sqs"
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
@@ -57,7 +57,7 @@ module "sqs" {
 # SSM Parameter Store — non-sensitive config
 # ---------------------------------------------------------------------------
 module "ssm" {
-  source      = "../../modules/ssm"
+  source      = "../../../modules/ssm"
   environment = var.environment
 
   parameters = {
@@ -101,7 +101,7 @@ resource "aws_secretsmanager_secret_version" "db_password" {
 # Database
 # ---------------------------------------------------------------------------
 module "rds" {
-  source = "../../modules/rds"
+  source = "../../../modules/rds"
 
   project_name          = var.project_name
   environment           = var.environment
@@ -118,7 +118,7 @@ module "rds" {
 # ECR
 # ---------------------------------------------------------------------------
 module "ecr" {
-  source = "../../modules/ecr"
+  source = "../../../modules/ecr"
 
   repository_name        = "${var.project_name}-api"
   image_tag_mutability   = "MUTABLE"
@@ -130,7 +130,7 @@ module "ecr" {
 # Compute
 # ---------------------------------------------------------------------------
 module "ecs_cluster" {
-  source      = "../../modules/ecs_cluster"
+  source      = "../../../modules/ecs_cluster"
   name_prefix = "${var.project_name}-${var.environment}"
 }
 
@@ -138,7 +138,7 @@ module "ecs_cluster" {
 # Load Balancing & CDN
 # ---------------------------------------------------------------------------
 module "alb" {
-  source = "../../modules/alb"
+  source = "../../../modules/alb"
 
   name_prefix       = "${var.project_name}-${var.environment}"
   vpc_id            = module.vpc.vpc_id
@@ -149,7 +149,7 @@ module "alb" {
 }
 
 module "ecs_service" {
-  source = "../../modules/ecs_service"
+  source = "../../../modules/ecs_service"
 
   name_prefix = "${var.project_name}-${var.environment}"
 
@@ -198,7 +198,7 @@ module "ecs_service" {
 }
 
 module "cloudfront" {
-  source = "../../modules/cloudfront"
+  source = "../../../modules/cloudfront"
 
   name_prefix         = "${var.project_name}-${var.environment}"
   alb_dns_name        = module.alb.alb_dns_name
@@ -213,7 +213,7 @@ module "cloudfront" {
 # GitHub Actions OIDC
 # ---------------------------------------------------------------------------
 module "github_oidc" {
-  source = "../../modules/github_oidc"
+  source = "../../../modules/github_oidc"
 
   name_prefix          = "${var.project_name}-${var.environment}"
   github_repository    = var.github_repository
@@ -227,7 +227,7 @@ module "github_oidc" {
 # Dedicated least-privilege role for the frontend CI/CD pipeline.
 # Only has S3 sync + CloudFront invalidation — no ECR or ECS access.
 module "github_oidc_frontend" {
-  source = "../../modules/github_oidc"
+  source = "../../../modules/github_oidc"
 
   name_prefix                = "${var.project_name}-${var.environment}-frontend"
   github_repository          = var.frontend_github_repository

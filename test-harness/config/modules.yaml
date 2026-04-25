@@ -1,0 +1,25 @@
+modules:
+  compute:
+    terraform_dir: ../environments/dev/compute-only
+    tests:
+      - test_compute
+
+  api:
+    terraform_dir: ../environments/dev/api-only
+    tests:
+      - test_api
+
+  storage:
+    terraform_dir: ../environments/dev/storage-only
+    tests:
+      - test_s3
+
+  messaging:
+    terraform_dir: ../environments/dev/messaging-only
+    tests:
+      - test_sqs
+
+  full:
+    terraform_dir: ../environments/dev/full-pipeline
+    tests:
+      - test_pipeline
