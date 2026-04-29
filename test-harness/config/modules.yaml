@@ -14,12 +14,22 @@ modules:
     tests:
       - test_s3
 
+  storage-messaging:
+    terraform_dir: ../environments/dev/storage-messaging
+    tests:
+      - test_storage_messaging
+
   messaging:
     terraform_dir: ../environments/dev/messaging-only
     tests:
       - test_sqs
 
-  full:
+  worker:
+    terraform_dir: ../environments/dev/worker-only
+    tests:
+      - test_worker
+
+  full-pipeline:
     terraform_dir: ../environments/dev/full-pipeline
     tests:
       - test_pipeline

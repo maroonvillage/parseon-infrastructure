@@ -51,7 +51,8 @@ def main():
             # test call
             run_tests(module_config["tests"], outputs)
             break
-        except:
+        except Exception as e:
+            print(f"Test attempt failed: {e}")
             time.sleep(5)
 
     if args.destroy:
