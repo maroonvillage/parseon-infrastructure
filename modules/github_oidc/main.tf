@@ -57,10 +57,14 @@ data "aws_iam_policy_document" "github_trust" {
       values   = ["sts.amazonaws.com"]
     }
 
+    // If github_oidc_subjects is set, use those values in the condition. Otherwise, allow any sub claim from the configured repository.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:*"]
+
+      values = length(var.github_oidc_subjects) > 0 ? var.github_oidc_subjects : [
+        "repo:${var.github_repository}:*"
+      ]
     }
   }
 }
@@ -119,7 +123,7 @@ data "aws_iam_policy_document" "github_actions" {
         "ecs:UpdateService",
         "ecs:DescribeServices",
       ]
-      resources = ["*"]
+      resources = var.ecs_service_arns
     }
   }
 

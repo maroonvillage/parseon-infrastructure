@@ -22,10 +22,10 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_managed" {
 # at task launch (the `secrets:` block in container definitions).
 # The managed AmazonECSTaskExecutionRolePolicy does NOT include these.
 data "aws_iam_policy_document" "secrets_injection" {
-  count = (length(var.secrets_arns) + length(var.ssm_parameter_arns)) > 0 ? 1 : 0
+  count = (length(var.execution_secrets_arns) + length(var.ssm_parameter_arns)) > 0 ? 1 : 0
 
   dynamic "statement" {
-    for_each = length(var.secrets_arns) > 0 ? [1] : []
+    for_each = length(var.execution_secrets_arns) > 0 ? [1] : []
     content {
       sid    = "SecretsManagerRead"
       effect = "Allow"
@@ -33,7 +33,7 @@ data "aws_iam_policy_document" "secrets_injection" {
         "secretsmanager:GetSecretValue",
         "secretsmanager:DescribeSecret",
       ]
-      resources = var.secrets_arns
+      resources = var.execution_secrets_arns
     }
   }
 
@@ -86,14 +86,15 @@ data "aws_iam_policy_document" "sqs_access" {
       "sqs:SendMessage",
       "sqs:ReceiveMessage",
       "sqs:DeleteMessage",
-      "sqs:GetQueueAttributes"
+      "sqs:GetQueueAttributes",
+      "sqs:ChangeMessageVisibility"
     ]
 
     resources = var.sqs_queue_arns
   }
 }
 data "aws_iam_policy_document" "secrets_access" {
-  count = length(var.secrets_arns) > 0 ? 1 : 0
+  count = length(var.task_secrets_arns) > 0 ? 1 : 0
 
   statement {
     actions = [
@@ -101,7 +102,7 @@ data "aws_iam_policy_document" "secrets_access" {
       "secretsmanager:DescribeSecret"
     ]
 
-    resources = var.secrets_arns
+    resources = var.task_secrets_arns
   }
 }
 data "aws_iam_policy_document" "rds_iam_auth" {
@@ -117,7 +118,7 @@ data "aws_iam_policy_document" "combined_task_policy" {
   source_policy_documents = compact([
     length(var.s3_bucket_arns) > 0 ? data.aws_iam_policy_document.s3_access[0].json : null,
     length(var.sqs_queue_arns) > 0 ? data.aws_iam_policy_document.sqs_access[0].json : null,
-    length(var.secrets_arns) > 0 ? data.aws_iam_policy_document.secrets_access[0].json : null,
+    length(var.task_secrets_arns) > 0 ? data.aws_iam_policy_document.secrets_access[0].json : null,
     var.enable_rds_iam_auth ? data.aws_iam_policy_document.rds_iam_auth[0].json : null
   ])
 }

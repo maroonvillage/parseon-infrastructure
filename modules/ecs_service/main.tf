@@ -2,7 +2,7 @@
 data "aws_region" "current" {}
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${var.name_prefix}"
-  retention_in_days = 30
+  retention_in_days = var.log_retention_in_days
 }
 resource "aws_ecs_task_definition" "this" {
   family                   = "${var.name_prefix}-task"
@@ -43,6 +43,12 @@ resource "aws_ecs_service" "this" {
   desired_count   = var.desired_count
   launch_type     = "FARGATE"
 
+  # Enable deployment circuit breaker to automatically roll back failed deployments, improving service stability during updates.
+  deployment_circuit_breaker {
+    enable   = var.enable_deployment_circuit_breaker
+    rollback = var.enable_deployment_rollback
+  }
+
   network_configuration {
     subnets          = var.private_subnet_ids
     security_groups  = [var.security_group_id]
@@ -54,10 +60,11 @@ resource "aws_ecs_service" "this" {
     container_name   = "${var.name_prefix}-container"
     container_port   = var.container_port
   }
+
 }
 resource "aws_appautoscaling_target" "ecs" {
-  max_capacity       = 4
-  min_capacity       = 1
+  max_capacity       = var.autoscaling_max_capacity
+  min_capacity       = var.autoscaling_min_capacity
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.this.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
@@ -71,7 +78,7 @@ resource "aws_appautoscaling_policy" "cpu" {
   service_namespace  = aws_appautoscaling_target.ecs.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = 60
+    target_value = var.autoscaling_cpu_target
 
     predefined_metric_specification {
       predefined_metric_type = "ECSServiceAverageCPUUtilization"

@@ -37,7 +37,7 @@ variable "private_subnet_cidrs" {
 
 # ── Compute ────────────────────────────────────────────────────────────────────
 variable "ecr_image_tag" {
-  description = "Image tag to deploy (e.g. latest, v1.2.3, git-sha)"
+  description = "Image tag to deploy. Prefer immutable Git SHA tags over latest."
   type        = string
   default     = "latest"
 }
@@ -120,4 +120,41 @@ variable "cloudfront_certificate_arn" {
   description = "ARN of the ACM certificate in us-east-1 for CloudFront. Leave null to use the default CloudFront certificate."
   type        = string
   default     = null
+}
+
+variable "backend_github_oidc_subjects" {
+  description = "Allowed GitHub OIDC subjects for backend CI/CD."
+  type        = list(string)
+  default     = []
+}
+
+variable "frontend_github_oidc_subjects" {
+  description = "Allowed GitHub OIDC subjects for frontend CI/CD."
+  type        = list(string)
+  default     = []
+}
+# ── Logging ───────────────────────────────────────────────────────────────────
+variable "ecs_log_retention_in_days" {
+  description = "CloudWatch log retention period for ECS container logs."
+  type        = number
+  default     = 30
+}
+
+
+variable "ecs_autoscaling_min_capacity" {
+  description = "Minimum ECS service task count for autoscaling."
+  type        = number
+  default     = 1
+}
+
+variable "ecs_autoscaling_max_capacity" {
+  description = "Maximum ECS service task count for autoscaling."
+  type        = number
+  default     = 4
+}
+
+variable "ecs_autoscaling_cpu_target" {
+  description = "Target ECS average CPU utilization percentage."
+  type        = number
+  default     = 60
 }

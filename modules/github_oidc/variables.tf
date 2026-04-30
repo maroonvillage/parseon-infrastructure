@@ -37,9 +37,21 @@ variable "frontend_bucket_arn" {
   type        = string
   default     = null
 }
-
+//
 variable "cloudfront_distribution_arn" {
   description = "ARN of the CloudFront distribution. When set, grants the CI/CD role permission to create cache invalidations."
   type        = string
   default     = null
+}
+# The GitHub OIDC provider can be configured with multiple allowed subject claims (e.g. for multiple repos or environments). If empty, the trust policy will allow any sub claim from the configured provider, so use with caution.
+variable "github_oidc_subjects" {
+  description = "Allowed GitHub OIDC subject claims. Examples: repo:owner/repo:ref:refs/heads/main or repo:owner/repo:environment:dev."
+  type        = list(string)
+  default     = []
+}
+# ARNs of ECS services that GitHub Actions may deploy to. Used to scope down the CI/CD role's permissions. If empty, the role will have permission to deploy to any service in the account, so use with caution.
+variable "ecs_service_arns" {
+  description = "ECS service ARNs this GitHub Actions role may deploy."
+  type        = list(string)
+  default     = []
 }

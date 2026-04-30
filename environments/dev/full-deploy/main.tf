@@ -80,8 +80,10 @@ module "iam" {
   enable_rds_iam_auth = var.enable_rds_iam_auth
 
   # Execution role needs these to inject values via the container `secrets:` block
-  secrets_arns       = [aws_secretsmanager_secret.db_password.arn]
-  ssm_parameter_arns = values(module.ssm.parameter_arns)
+  # Task role doesn't directly reference these ARNs — it only needs permissions to allow the execution role to read them.
+  execution_secrets_arns = [aws_secretsmanager_secret.db_password.arn]
+  task_secrets_arns      = []
+  ssm_parameter_arns     = values(module.ssm.parameter_arns)
 }
 
 # ---------------------------------------------------------------------------
@@ -191,6 +193,14 @@ module "ecs_service" {
     { name = "SQS_QUEUE_URL", valueFrom = module.ssm.parameter_arns["sqs/queue_url"] },
   ]
 
+  # Optional logging configuration for ECS tasks. If not set, tasks will still have basic logging to CloudWatch, but without log groups or retention policies.
+  log_retention_in_days = var.ecs_log_retention_in_days
+
+  # Autoscaling configuration. If not set, the service will run with a fixed desired count and no autoscaling policies.
+  autoscaling_min_capacity = var.ecs_autoscaling_min_capacity
+  autoscaling_max_capacity = var.ecs_autoscaling_max_capacity
+  autoscaling_cpu_target   = var.ecs_autoscaling_cpu_target
+
   # The ECS service requires the target group to be attached to an ALB listener
   # before it can register tasks. This explicit dependency ensures all ALB
   # resources (including listeners) are fully created first.
@@ -218,10 +228,10 @@ module "github_oidc" {
   name_prefix          = "${var.project_name}-${var.environment}"
   github_repository    = var.github_repository
   ecr_repository_arns  = [module.ecr.repository_arn]
+  ecs_service_arns     = [module.ecs_service.service_arn]
   create_oidc_provider = var.create_github_oidc_provider
 
-  frontend_bucket_arn         = module.s3_frontend.bucket_arn
-  cloudfront_distribution_arn = module.cloudfront.distribution_arn
+  github_oidc_subjects = var.backend_github_oidc_subjects
 }
 
 # Dedicated least-privilege role for the frontend CI/CD pipeline.
@@ -231,9 +241,11 @@ module "github_oidc_frontend" {
 
   name_prefix                = "${var.project_name}-${var.environment}-frontend"
   github_repository          = var.frontend_github_repository
-  create_oidc_provider       = false # Provider already created by github_oidc module above
-  lookup_oidc_provider       = false # ARN is passed directly — avoids data-source lookup at plan time
+  create_oidc_provider       = false
+  lookup_oidc_provider       = false
   existing_oidc_provider_arn = module.github_oidc.oidc_provider_arn
+
+  github_oidc_subjects = var.frontend_github_oidc_subjects
 
   frontend_bucket_arn         = module.s3_frontend.bucket_arn
   cloudfront_distribution_arn = module.cloudfront.distribution_arn
