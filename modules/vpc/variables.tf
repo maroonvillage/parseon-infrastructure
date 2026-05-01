@@ -8,7 +8,7 @@ variable "environment" {
 }
 
 variable "vpc_cidr" {
-  type = string
+  type    = string
   default = "10.0.0.0/16"
 }
 
@@ -22,4 +22,10 @@ variable "public_subnet_cidrs" {
 
 variable "private_subnet_cidrs" {
   type = list(string)
+}
+
+variable "single_nat_gateway" {
+  description = "Whether to use a single NAT Gateway instead of one per AZ."
+  type        = bool
+  default     = true
 }

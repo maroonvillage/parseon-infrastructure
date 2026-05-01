@@ -18,3 +18,22 @@ variable "health_check_path" {
   type    = string
   default = "/health"
 }
+
+
+variable "enable_access_logs" {
+  description = "Whether ALB access logs are enabled."
+  type        = bool
+  default     = false
+}
+
+variable "access_logs_bucket" {
+  description = "S3 bucket for ALB access logs."
+  type        = string
+  default     = null
+}
+
+variable "access_logs_prefix" {
+  description = "S3 prefix for ALB access logs."
+  type        = string
+  default     = "alb"
+}

@@ -15,6 +15,42 @@ variable "environment" {
   type        = string
   default     = "dev"
 }
+# ── Security ─────────────────────────────────────────────────────────────────
+variable "enable_production_hardening" {
+  description = "Enables production-grade hardening controls. Usually true only in prod."
+  type        = bool
+  default     = false
+}
+
+variable "rds_multi_az" {
+  description = "Whether RDS should run in Multi-AZ mode."
+  type        = bool
+  default     = null
+}
+
+variable "rds_deletion_protection" {
+  description = "Whether RDS deletion protection should be enabled."
+  type        = bool
+  default     = null
+}
+
+variable "rds_skip_final_snapshot" {
+  description = "Whether to skip the final DB snapshot on deletion."
+  type        = bool
+  default     = null
+}
+
+variable "rds_backup_retention_period" {
+  description = "Number of days to retain RDS automated backups."
+  type        = number
+  default     = null
+}
+
+variable "rds_final_snapshot_identifier_prefix" {
+  description = "Prefix used for final RDS snapshot identifiers."
+  type        = string
+  default     = "final"
+}
 
 # ── Networking ─────────────────────────────────────────────────────────────────
 variable "availability_zones" {
@@ -157,4 +193,93 @@ variable "ecs_autoscaling_cpu_target" {
   description = "Target ECS average CPU utilization percentage."
   type        = number
   default     = 60
+}
+
+# ── Secrets Manager ─────────────────────────────────────────────────────────────
+variable "secrets_recovery_window_in_days" {
+  description = "Recovery window for Secrets Manager secrets before permanent deletion."
+  type        = number
+  default     = null
+}
+
+variable "cloudfront_alb_origin_protocol_policy" {
+  description = "Protocol policy CloudFront uses when connecting to the ALB origin."
+  type        = string
+  default     = null
+}
+
+variable "enable_waf" {
+  description = "Whether to create and attach AWS WAF to CloudFront."
+  type        = bool
+  default     = false
+}
+
+variable "enable_access_logs" {
+  description = "Whether to enable centralized access logging."
+  type        = bool
+  default     = false
+}
+
+variable "access_logs_bucket_name" {
+  description = "Optional existing bucket for access logs."
+  type        = string
+  default     = null
+}
+
+variable "alb_access_logs_prefix" {
+  description = "Prefix for ALB access logs."
+  type        = string
+  default     = "alb"
+}
+
+variable "cloudfront_access_logs_prefix" {
+  description = "Prefix for CloudFront access logs."
+  type        = string
+  default     = "cloudfront"
+}
+
+# ── VPC Endpoints ─────────────────────────────────────────────────────────────
+variable "enable_vpc_endpoints" {
+  description = "Whether to create VPC endpoints for private AWS service access."
+  type        = bool
+  default     = false
+}
+
+variable "vpc_endpoint_services" {
+  description = "Interface endpoint services to create."
+  type        = list(string)
+  default = [
+    "ecr.api",
+    "ecr.dkr",
+    "logs",
+    "secretsmanager",
+    "ssm",
+    "ssmmessages",
+    "ec2messages",
+    "sqs"
+  ]
+}
+
+variable "enable_s3_gateway_endpoint" {
+  description = "Whether to create an S3 gateway endpoint."
+  type        = bool
+  default     = false
+}
+
+variable "single_nat_gateway" {
+  description = "Whether to use one NAT Gateway. Dev usually true. Prod usually false."
+  type        = bool
+  default     = null
+}
+
+variable "enable_customer_managed_kms" {
+  description = "Whether to use customer-managed KMS keys instead of AWS-managed encryption."
+  type        = bool
+  default     = false
+}
+
+variable "kms_deletion_window_in_days" {
+  description = "KMS key deletion window."
+  type        = number
+  default     = 30
 }

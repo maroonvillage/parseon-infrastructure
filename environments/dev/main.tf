@@ -10,6 +10,16 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+
+# Terraform Cloud doesn't support provider aliases or multiple provider instances in the same
+# workspace, so we have to use a single provider configuration for all resources, even those that would
+# ideally be in a separate account or region (e.g. a central logging account or global CloudFront distribution).
+# In a more complex setup, we'd likely have separate Terraform workspaces for each account/region and use remote
+# state data sources to reference resources across them.
+locals {
+  is_prod = var.environment == "prod" || var.enable_production_hardening
+}
+
 # ---------------------------------------------------------------------------
 # Networking
 # ---------------------------------------------------------------------------
@@ -21,6 +31,11 @@ module "vpc" {
   availability_zones   = var.availability_zones
   public_subnet_cidrs  = var.public_subnet_cidrs
   private_subnet_cidrs = var.private_subnet_cidrs
+  single_nat_gateway = (
+    var.single_nat_gateway != null
+    ? var.single_nat_gateway
+    : !local.is_prod
+  )
 }
 
 module "security_groups" {
@@ -90,8 +105,12 @@ module "iam" {
 # Secrets Manager — sensitive values (passwords, API keys)
 # ---------------------------------------------------------------------------
 resource "aws_secretsmanager_secret" "db_password" {
-  name                    = "parseon/${var.environment}/db_password"
-  recovery_window_in_days = 0 # dev: allow immediate deletion without waiting period
+  name = "parseon/${var.environment}/db_password"
+  recovery_window_in_days = (
+    var.secrets_recovery_window_in_days != null
+    ? var.secrets_recovery_window_in_days
+    : local.is_prod ? 30 : 0
+  ) # dev: allow immediate deletion without waiting period
 }
 
 resource "aws_secretsmanager_secret_version" "db_password" {
@@ -111,9 +130,22 @@ module "rds" {
   rds_security_group_id = module.security_groups.rds_sg_id
   db_username           = var.db_username
   db_password           = var.db_password
-  multi_az              = false
-  skip_final_snapshot   = true
-  deletion_protection   = false
+  multi_az = (
+    var.rds_multi_az != null
+    ? var.rds_multi_az
+    : local.is_prod
+  )
+  skip_final_snapshot = (
+    var.rds_skip_final_snapshot != null
+    ? var.rds_skip_final_snapshot
+    : !local.is_prod
+  )
+  deletion_protection = (
+    var.rds_deletion_protection != null
+    ? var.rds_deletion_protection
+    : local.is_prod
+  )
+
 }
 
 # ---------------------------------------------------------------------------
@@ -210,13 +242,20 @@ module "ecs_service" {
 module "cloudfront" {
   source = "../../../modules/cloudfront"
 
-  name_prefix         = "${var.project_name}-${var.environment}"
-  alb_dns_name        = module.alb.alb_dns_name
+  name_prefix  = "${var.project_name}-${var.environment}"
+  alb_dns_name = module.alb.alb_dns_name
+  alb_origin_protocol_policy = (
+    var.cloudfront_alb_origin_protocol_policy != null
+    ? var.cloudfront_alb_origin_protocol_policy
+    : local.is_prod ? "https-only" : "http-only"
+  )
   acm_certificate_arn = var.cloudfront_certificate_arn
 
   s3_frontend_bucket_id                   = module.s3_frontend.bucket_id
   s3_frontend_bucket_arn                  = module.s3_frontend.bucket_arn
   s3_frontend_bucket_regional_domain_name = module.s3_frontend.bucket_regional_domain_name
+
+  web_acl_id = var.enable_waf ? module.waf[0].web_acl_arn : null
 }
 
 # ---------------------------------------------------------------------------
@@ -250,3 +289,40 @@ module "github_oidc_frontend" {
   frontend_bucket_arn         = module.s3_frontend.bucket_arn
   cloudfront_distribution_arn = module.cloudfront.distribution_arn
 }
+
+# ---------------------------------------------------------------------------
+# WAF (optional, only if enable_waf is true)
+# ---------------------------------------------------------------------------
+module "waf" {
+  count  = var.enable_waf ? 1 : 0
+  source = "../../../modules/waf"
+
+  name_prefix = "${var.project_name}-${var.environment}"
+  scope       = "CLOUDFRONT"
+}
+
+# ---------------------------------------------------------------------------
+# VPC Endpoints (optional, only if enable_vpc_endpoints is true)
+# ---------------------------------------------------------------------------
+module "vpc_endpoints" {
+  count  = var.enable_vpc_endpoints ? 1 : 0
+  source = "../../../modules/vpc_endpoints"
+
+  name_prefix                = "${var.project_name}-${var.environment}"
+  vpc_id                     = module.vpc.vpc_id
+  aws_region                 = var.aws_region
+  private_subnet_ids         = module.vpc.private_subnet_ids
+  private_route_table_ids    = module.vpc.private_route_table_ids
+  security_group_ids         = [module.security_groups.ecs_security_group_id]
+  interface_services         = var.vpc_endpoint_services
+  enable_s3_gateway_endpoint = var.enable_s3_gateway_endpoint
+}
+
+module "kms" {
+  count  = var.enable_customer_managed_kms ? 1 : 0
+  source = "../../../modules/kms"
+
+  name_prefix             = "${var.project_name}-${var.environment}"
+  deletion_window_in_days = var.kms_deletion_window_in_days
+}
+

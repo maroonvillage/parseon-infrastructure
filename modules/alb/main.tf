@@ -4,6 +4,16 @@ resource "aws_lb" "this" {
   load_balancer_type = "application"
   subnets            = var.public_subnet_ids
   security_groups    = [var.security_group_id]
+
+  dynamic "access_logs" {
+    for_each = var.enable_access_logs && var.access_logs_bucket != null ? [1] : []
+
+    content {
+      bucket  = var.access_logs_bucket
+      prefix  = var.access_logs_prefix
+      enabled = true
+    }
+  }
 }
 resource "aws_lb_target_group" "this" {
   name        = "${var.name_prefix}-tg"
@@ -30,6 +40,7 @@ resource "aws_lb_listener" "https" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.this.arn
   }
+
 }
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.this.arn

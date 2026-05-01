@@ -23,3 +23,26 @@ variable "s3_frontend_bucket_regional_domain_name" {
   description = "Regional domain name of the S3 frontend bucket (e.g. my-bucket.s3.us-east-1.amazonaws.com)"
   type        = string
 }
+
+# Note: the default is http-only for now since the ALB doesn't have an HTTPS listener yet. Once that's set up, we can change the default to https-only.
+variable "alb_origin_protocol_policy" {
+  description = "CloudFront origin protocol policy for the ALB origin."
+  type        = string
+  default     = "http-only"
+
+  validation {
+    condition = contains([
+      "http-only",
+      "https-only",
+      "match-viewer"
+    ], var.alb_origin_protocol_policy)
+
+    error_message = "alb_origin_protocol_policy must be one of: http-only, https-only, match-viewer."
+  }
+}
+
+variable "web_acl_id" {
+  description = "Optional WAF Web ACL ARN to attach to CloudFront."
+  type        = string
+  default     = null
+}

@@ -41,6 +41,7 @@ resource "aws_cloudfront_distribution" "this" {
   enabled             = true
   default_root_object = "index.html"
 
+  web_acl_id = var.web_acl_id # Optional WAF Web ACL ARN to attach to CloudFront (can be null/empty)
   # Origin 1: S3 bucket (React frontend static assets)
   origin {
     domain_name              = var.s3_frontend_bucket_regional_domain_name
@@ -57,7 +58,7 @@ resource "aws_cloudfront_distribution" "this" {
       http_port  = 80
       https_port = 443
       # Temporarily http-only until alb_certificate_arn is set in tfvars and ALB HTTPS listener is active
-      origin_protocol_policy = "http-only"
+      origin_protocol_policy = var.alb_origin_protocol_policy
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
