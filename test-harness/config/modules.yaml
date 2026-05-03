@@ -9,15 +9,17 @@ modules:
     tests:
       - test_security_groups
 
+  storage:
+    terraform_dir: ../environments/dev/tests/03-storage
+    tests:
+      - test_s3
+
   # api:
   #   terraform_dir: ../environments/dev/api-only
   #   tests:
   #     - test_api
 
-  # storage:
-  #   terraform_dir: ../environments/dev/storage-only
-  #   tests:
-  #     - test_s3
+
 
   # storage-messaging:
   #   terraform_dir: ../environments/dev/storage-messaging
