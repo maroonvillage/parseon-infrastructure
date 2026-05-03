@@ -4,10 +4,10 @@ modules:
     tests:
       - test_networking
 
-  # compute:
-  #   terraform_dir: ../environments/dev/compute-only
-  #   tests:
-  #     - test_compute
+  security_groups:
+    terraform_dir: ../environments/dev/tests/02-security-groups
+    tests:
+      - test_security_groups
 
   # api:
   #   terraform_dir: ../environments/dev/api-only
