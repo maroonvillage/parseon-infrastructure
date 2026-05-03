@@ -14,6 +14,13 @@ modules:
     tests:
       - test_s3
 
+
+  messaging:
+    terraform_dir: ../environments/dev/tests/04-messaging
+    tests:
+      - test_sqs
+
+
   # api:
   #   terraform_dir: ../environments/dev/api-only
   #   tests:
@@ -26,10 +33,7 @@ modules:
   #   tests:
   #     - test_storage_messaging
 
-  # messaging:
-  #   terraform_dir: ../environments/dev/messaging-only
-  #   tests:
-  #     - test_sqs
+
 
   # worker:
   #   terraform_dir: ../environments/dev/worker-only
