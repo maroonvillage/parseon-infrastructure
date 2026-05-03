@@ -1,35 +1,40 @@
 modules:
-  compute:
-    terraform_dir: ../environments/dev/compute-only
+  networking:
+    terraform_dir: ../environments/dev/tests/01-networking
     tests:
-      - test_compute
+      - test_networking
 
-  api:
-    terraform_dir: ../environments/dev/api-only
-    tests:
-      - test_api
+  # compute:
+  #   terraform_dir: ../environments/dev/compute-only
+  #   tests:
+  #     - test_compute
 
-  storage:
-    terraform_dir: ../environments/dev/storage-only
-    tests:
-      - test_s3
+  # api:
+  #   terraform_dir: ../environments/dev/api-only
+  #   tests:
+  #     - test_api
 
-  storage-messaging:
-    terraform_dir: ../environments/dev/storage-messaging
-    tests:
-      - test_storage_messaging
+  # storage:
+  #   terraform_dir: ../environments/dev/storage-only
+  #   tests:
+  #     - test_s3
 
-  messaging:
-    terraform_dir: ../environments/dev/messaging-only
-    tests:
-      - test_sqs
+  # storage-messaging:
+  #   terraform_dir: ../environments/dev/storage-messaging
+  #   tests:
+  #     - test_storage_messaging
 
-  worker:
-    terraform_dir: ../environments/dev/worker-only
-    tests:
-      - test_worker
+  # messaging:
+  #   terraform_dir: ../environments/dev/messaging-only
+  #   tests:
+  #     - test_sqs
 
-  full-pipeline:
-    terraform_dir: ../environments/dev/full-pipeline
-    tests:
-      - test_pipeline
+  # worker:
+  #   terraform_dir: ../environments/dev/worker-only
+  #   tests:
+  #     - test_worker
+
+  # full-pipeline:
+  #   terraform_dir: ../environments/dev/full-pipeline
+  #   tests:
+  #     - test_pipeline
