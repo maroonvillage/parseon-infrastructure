@@ -28,6 +28,11 @@ modules:
     terraform_dir: ../environments/dev/tests/06-ecr
     tests:
       - test_ecr
+
+  ecs_cluster:
+    terraform_dir: ../environments/dev/tests/07-ecs-cluster
+    tests:
+      - test_ecs_cluster
   # api:
   #   terraform_dir: ../environments/dev/api-only
   #   tests:
