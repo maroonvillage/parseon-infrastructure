@@ -24,7 +24,10 @@ modules:
     tests:
       - test_sqs
 
-
+  ecr:
+    terraform_dir: ../environments/dev/tests/06-ecr
+    tests:
+      - test_ecr
   # api:
   #   terraform_dir: ../environments/dev/api-only
   #   tests:
