@@ -68,6 +68,16 @@ module "sqs" {
 # ---------------------------------------------------------------------------
 # IAM (application roles — ECS task + execution)
 # ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Secrets Manager — sensitive values (passwords, API keys)
+# ---------------------------------------------------------------------------
+module "secrets" {
+  source      = "../../../modules/secrets"
+  environment = var.environment
+  is_prod     = local.is_prod
+}
+
 # ---------------------------------------------------------------------------
 # SSM Parameter Store — non-sensitive config
 # ---------------------------------------------------------------------------
@@ -99,23 +109,6 @@ module "iam" {
   execution_secrets_arns = [aws_secretsmanager_secret.db_password.arn]
   task_secrets_arns      = []
   ssm_parameter_arns     = values(module.ssm.parameter_arns)
-}
-
-# ---------------------------------------------------------------------------
-# Secrets Manager — sensitive values (passwords, API keys)
-# ---------------------------------------------------------------------------
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "parseon/${var.environment}/db_password"
-  recovery_window_in_days = (
-    var.secrets_recovery_window_in_days != null
-    ? var.secrets_recovery_window_in_days
-    : local.is_prod ? 30 : 0
-  ) # dev: allow immediate deletion without waiting period
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = var.db_password
 }
 
 # ---------------------------------------------------------------------------

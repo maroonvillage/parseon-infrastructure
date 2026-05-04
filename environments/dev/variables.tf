@@ -109,12 +109,6 @@ variable "db_username" {
   sensitive   = true
 }
 
-variable "db_password" {
-  description = "Master password for the RDS instance — pass via TF_VAR_db_password env var, never commit"
-  type        = string
-  sensitive   = true
-}
-
 # ── IAM ────────────────────────────────────────────────────────────────────────
 variable "secrets_arns" {
   description = "List of Secrets Manager ARNs the ECS task role is allowed to read"
@@ -195,12 +189,7 @@ variable "ecs_autoscaling_cpu_target" {
   default     = 60
 }
 
-# ── Secrets Manager ─────────────────────────────────────────────────────────────
-variable "secrets_recovery_window_in_days" {
-  description = "Recovery window for Secrets Manager secrets before permanent deletion."
-  type        = number
-  default     = null
-}
+
 
 variable "cloudfront_alb_origin_protocol_policy" {
   description = "Protocol policy CloudFront uses when connecting to the ALB origin."

@@ -11,7 +11,7 @@ variable "project_name" {
 
 variable "environment" {
   type    = string
-  default = "dev-networking-test"
+  default = "dev-messaging-test"
 }
 
 variable "visibility_timeout_seconds" {
