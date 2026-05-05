@@ -120,7 +120,7 @@ module "alb" {
   name_prefix       = "${var.project_name}-${var.environment}"
   vpc_id            = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
-  security_group_id = module.security_groups.alb_sg_id
+  security_group_id = module.security_groups.alb_security_group_id
   target_port       = var.container_port
   certificate_arn   = var.alb_certificate_arn
 }

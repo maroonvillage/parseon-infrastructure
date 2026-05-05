@@ -33,12 +33,16 @@ modules:
     terraform_dir: ../environments/dev/tests/07-ecs-cluster
     tests:
       - test_ecs_cluster
-  # api:
-  #   terraform_dir: ../environments/dev/api-only
-  #   tests:
-  #     - test_api
 
+  api_compute:
+    terraform_dir: ../environments/dev/tests/08-api-compute
+    tests:
+      - test_api_compute
 
+  frontend_edge:
+    terraform_dir: ../environments/dev/tests/09-frontend-edge
+    tests:
+      - test_frontend_edge
 
   # storage-messaging:
   #   terraform_dir: ../environments/dev/storage-messaging

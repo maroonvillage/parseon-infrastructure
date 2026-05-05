@@ -114,7 +114,18 @@ data "aws_iam_policy_document" "rds_iam_auth" {
   }
 }
 
+locals {
+  has_task_policy = (
+    length(var.s3_bucket_arns) > 0 ||
+    length(var.sqs_queue_arns) > 0 ||
+    length(var.task_secrets_arns) > 0 ||
+    var.enable_rds_iam_auth
+  )
+}
+
 data "aws_iam_policy_document" "combined_task_policy" {
+  count = local.has_task_policy ? 1 : 0
+
   source_policy_documents = compact([
     length(var.s3_bucket_arns) > 0 ? data.aws_iam_policy_document.s3_access[0].json : null,
     length(var.sqs_queue_arns) > 0 ? data.aws_iam_policy_document.sqs_access[0].json : null,
@@ -124,11 +135,13 @@ data "aws_iam_policy_document" "combined_task_policy" {
 }
 
 resource "aws_iam_policy" "ecs_task_policy" {
+  count  = local.has_task_policy ? 1 : 0
   name   = "${var.name_prefix}-ecs-task-policy"
-  policy = data.aws_iam_policy_document.combined_task_policy.json
+  policy = data.aws_iam_policy_document.combined_task_policy[0].json
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_attach" {
+  count      = local.has_task_policy ? 1 : 0
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.ecs_task_policy.arn
+  policy_arn = aws_iam_policy.ecs_task_policy[0].arn
 }

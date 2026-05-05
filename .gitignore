@@ -36,7 +36,4 @@ plan_output.txt
 
 # Python virtual environment
 .venv/
-test-harness/tests/__pycache__/test_compute.cpython-313.pyc
-test-harness/utils/__pycache__/terraform.cpython-313.pyc
-test-harness/tests/__pycache__/test_storage_messaging.cpython-313.pyc
-test-harness/tests/__pycache__/test_worker.cpython-313.pyc
+*.pyc
